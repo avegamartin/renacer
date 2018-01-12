@@ -1,0 +1,63 @@
+# Excellence in Theological Education ICETE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Excellence in Theological Education ICETE\n"
+"POT-Creation-Date: 2017-09-21 11:13+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Gustavo Mena <gusmr1978@gmail.com>\n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Content of: <book><info><title>
+#: book-en_GB.xml:4
+msgid "Excellence in Theological Educational"
+msgstr "La excelencia en la educación teológica"
+
+#. type: Content of: <book><info><subtitle>
+#: book-en_GB.xml:5
+msgid "Effective Training for Church Leaders"
+msgstr "Entrenamiento efectivo para líderes de la iglesia"
+
+#. type: Content of: <book><info>
+#: book-en_GB.xml:6
+msgid ""
+"<author> <personname> <firstname>Steve A.</firstname> "
+"<surname>Hardy</surname> </personname> </author>"
+msgstr ""
+"<author> <personname> <firstname>Steve A.</firstname> "
+"<surname>Hardy</surname> </personname> </author>"
+
+#. type: Content of: <book><preface><info><title>
+#: book-en_GB.xml:15
+msgid "Preface"
+msgstr "Prefacio"
+
+#. type: Content of: <book><preface><para>
+#: book-en_GB.xml:17
+msgid "This book is designed to help theological school leadership, especially within the non-Western world, to affirm the excellence of their training institutions, and where excellence may be lacking, to discover ideas that will strengthen the quality of what they have."
+msgstr "Este libro se ha diseñado como ayuda para el liderazgo de las instituciones teológicas, especialmente aquellas que están por fuera del mundo occidental, para afirmar la excelencia de sus instituciones de entrenamiento y, donde pueda existir una falta de excelencia, para descubrir ideas que fortalecerán la calidad de lo que tienen. "
+
+#. type: Content of: <book><preface><para role="indent">
+#: book-en_GB.xml:18
+msgid "It has been said that when you look behind a successful young man, someone who is making a difference in the lives of others, you will find a fairly astonished mother-in-law. But I suspect that you won’t find astonished teachers. What a privilege for a teacher to be involved in the lives of those that God has gifted and called for his service. I love the impact that training has on multiplying and strengthening the mission and work of the church. Over the years, it has been satisfying to watch my students move beyond their teacher in skills and effectively go places that I could never have gone."
+
+msgstr "Se ha dicho que detrás de todo joven exitoso, alguien que está haciendo una diferencia en la vida de otros, encontrarás una suegra más o menos atónita. Pero sospecho que no encontrarás profesores atónitos. Qué privilegio es el del profesor que puede involucrarse en la vida de quienes Dios ha dotado y llamado para su servicio. Me encanta el impacto que tiene el entrenamiento sobre la multiplicación y el fortalecimiento de la misión y la obra de la iglesia. A través de los años, ha sido satisfactorio ver a mis estudiantes sobrepasar a su profesor en habilidades e ir, efectivamente, a lugares a los cuales yo nunca podría haber ido."
+
+
+#. type: Content of: <book><preface><section><info><title>
+#: book-en_GB.xml:21
+msgid "Excellence in Leadership (chapter 2)"
+msgstr "La excelencia en el liderazgo (capítulo 2)"
+
+#. type: Content of: <book><preface><section><para>
+#: book-en_GB.xml:23
+msgid "An excellent leadership training institution understands what leadership is and how it can be encouraged, trained and used. Good programs know how to take advantage of differing styles of leaders. Finding, encouraging and developing good leaders may be the most important piece of what makes a good program excellent."
+msgstr "Una institución excelente de entrenamiento para el liderazgo entiende lo que es el liderazgo y cómo se puede animar, entrenar y usar. Los buenos programas saben cómo sacar provecho de los diferentes estilos de líderes. El encontrar, animar y desarrollar buenos líderes puede ser la pieza más importante de lo que convierte un programa bueno en uno excelente."

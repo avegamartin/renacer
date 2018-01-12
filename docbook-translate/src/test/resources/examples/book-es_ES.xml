@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns="http://docbook.org/ns/docbook">
+	<info>
+		<title>La excelencia en la educación teológica</title>
+		<subtitle>Entrenamiento efectivo para líderes eclesiales</subtitle>
+		<author>
+			<personname>
+				<firstname>Steve A.</firstname>
+				<surname>Hardy</surname>
+			</personname>
+		</author>
+	</info>
+	<preface xmlns="http://docbook.org/ns/docbook" xml:id="s0_1_">
+		<info>
+			<title>Prefacio</title>
+		</info>
+	  	<para>Este libro se ha diseñado como ayuda para el liderazgo de las instituciones teológicas, especialmente aquellas que están por fuera del mundo occidental, para afirmar la excelencia de sus instituciones de entrenamiento y, donde pueda existir una falta de excelencia, para descubrir ideas que fortalecerán la calidad de lo que tienen. </para>
+	  	<para role="indent">Se ha dicho que detrás de todo joven exitoso, alguien que está haciendo una diferencia en la vida de otros, encontrarás una suegra más o menos atónita. Pero sospecho que no encontrarás profesores atónitos. Qué privilegio es el del profesor que puede involucrarse en la vida de quienes Dios ha dotado y llamado para su servicio. Me encanta el impacto que tiene el entrenamiento sobre la multiplicación y el fortalecimiento de la misión y la obra de la iglesia. A través de los años, ha sido satisfactorio ver a mis estudiantes sobrepasar a su profesor en habilidades e ir, efectivamente, a lugares a los cuales yo nunca podría haber ido. </para>
+		<section xml:id="s0_1_1">
+			<info>
+				<title>La excelencia en el liderazgo (capítulo 2)</title>
+			</info>
+	    	<para>Una institución excelente de entrenamiento para el liderazgo entiende lo que es el liderazgo y cómo se puede animar, entrenar y usar. Los buenos programas saben cómo sacar provecho de los diferentes estilos de líderes. El encontrar, animar y desarrollar buenos líderes puede ser la pieza más importante de lo que convierte un programa bueno en uno excelente. </para>
+	  	</section>
+	</preface>
+</book>

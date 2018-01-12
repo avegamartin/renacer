@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns="http://docbook.org/ns/docbook">
+	<info>
+		<title>Excellence in Theological Educational</title>
+		<subtitle>Effective Training for Church Leaders</subtitle>
+		<author>
+			<personname>
+				<firstname>Steve A.</firstname>
+				<surname>Hardy</surname>
+			</personname>
+		</author>
+	</info>
+	<preface xmlns="http://docbook.org/ns/docbook" xml:id="s0_1_">
+		<info>
+			<title>Preface</title>
+		</info>
+	  	<para>This book is designed to help theological school leadership, especially within the non-Western world, to affirm the excellence of their training institutions, and where excellence may be lacking, to discover ideas that will strengthen the quality of what they have. </para>
+	  	<para role="indent">It has been said that when you look behind a successful young man, someone who is making a difference in the lives of others, you will find a fairly astonished mother-in-law. But I suspect that you won’t find astonished teachers. What a privilege for a teacher to be involved in the lives of those that God has gifted and called for his service. I love the impact that training has on multiplying and strengthening the mission and work of the church. Over the years, it has been satisfying to watch my students move beyond their teacher in skills and effectively go places that I could never have gone. </para>
+		<section>
+			<info>
+				<title>Excellence in Leadership (chapter 2)</title>
+			</info>
+	    	<para>An excellent leadership training institution understands what leadership is and how it can be encouraged, trained and used. Good programs know how to take advantage of differing styles of leaders. Finding, encouraging and developing good leaders may be the most important piece of what makes a good program excellent. </para>
+	  	</section>
+	</preface>
+</book>
