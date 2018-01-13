@@ -30,8 +30,9 @@ public class GeneraFicheroPOTest extends TestCase {
 			Document libro = generador.analizaXMLDocBook(
 					generador.getClass().getClassLoader().getResourceAsStream("examples/book-en_GB.xml"));
 			assertEquals(libro.getXMLEncoding(), "UTF-8");
-			generador.iteraElementos(libro.getRootElement());
-			System.out.println("Título de libro: " + generador.obténTítuloLibroOrigen());
+			generador.iteraElementos(libro.getRootElement(), "title");
+			assertEquals(generador.obténTítuloLibroOrigen(), "Excellence in Theological Educational");
+			generador.generaPO();
 		} catch (DocumentException e) {
 			e.printStackTrace();
 			assertTrue("Se ha producido una excepción al procesar el fichero:\n" + e, false);
