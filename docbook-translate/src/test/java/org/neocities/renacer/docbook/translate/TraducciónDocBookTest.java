@@ -3,12 +3,10 @@
  */
 package org.neocities.renacer.docbook.translate;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
 import junit.framework.TestCase;
 
 /**
- * @author antonio
+ * @author avega
  *
  */
 public class TraducciónDocBookTest extends TestCase {
@@ -27,6 +25,7 @@ public class TraducciónDocBookTest extends TestCase {
 	public void testAnalizaXMLDocBook() {
 		TraducciónDocBook traducción = new TraducciónDocBook();
 		traducción.estableceLibroOrigen("src/test/resources/examples/book-en_GB.xml");
+		traducción.estableceLibroDestino("src/test/resources/examples/book-es_ES.xml");
 		assertEquals(traducción.getLibroOrigenDoc().getXMLEncoding(), "UTF-8");
 		assertEquals(traducción.obténTítuloLibro(traducción.getLibroOrigenDoc()), "Excellence in Theological Educational");
 		traducción.generaFicheroPO();

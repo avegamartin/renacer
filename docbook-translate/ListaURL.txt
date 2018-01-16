@@ -1,9 +1,12 @@
 URL interesantes:
 
+https://dom4j.github.io/
+https://dom4j.github.io/javadoc/2.1.0/
 http://docbook.org/schemas/
 http://docbook.org/xml/publishers/1.0/xsd/
-https://mvnrepository.com/artifact/org.dom4j/dom4j/2.1.0
-https://dom4j.github.io/javadoc/2.1.0/
+https://mvnrepository.com/artifact/org.dom4j
+http://javadoc.io/doc/org.dom4j/dom4j/2.1.0/dom4j/2.1.0
 https://www.ibm.com/developerworks/library/x-dom4j/index.html
 https://stackoverflow.com/questions/4440451/how-to-ignore-namespaces-with-xpath
+https://stackoverflow.com/questions/36006819/use-dom4j-to-locate-the-node-with-line-number
 https://www.w3.org/2005/xpath-functions/

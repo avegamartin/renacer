@@ -27,9 +27,10 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
+import org.neocities.renacer.util.NumberedSAXReader;
 
 /**
- * @author antonio
+ * @author avega
  *
  */
 public class TraducciónDocBook {
@@ -55,13 +56,14 @@ public class TraducciónDocBook {
 
 	/**
 	 * @param args
-	 *            Lista de ficheros XML, contenedores de libros, a analizar.
+	 *            Lista de ficheros XML, contenedores de libros, a analizar: idioma
+	 *            de origen y de destino.
 	 */
 	public static void main(String[] args) {
-		TraducciónDocBook generador = new TraducciónDocBook();
+		TraducciónDocBook traducción = new TraducciónDocBook();
 		try {
-			Document libro = generador
-					.analizaXMLDocBook(generador.getClass().getClassLoader().getResourceAsStream(args[0]));
+			Document libro = traducción
+					.analizaXMLDocBook(traducción.getClass().getClassLoader().getResourceAsStream(args[0]));
 			System.out.println("Codificación empleada:" + libro.getXMLEncoding());
 
 		} catch (DocumentException e) {
@@ -71,13 +73,15 @@ public class TraducciónDocBook {
 	}
 
 	/**
-	 * Establecimiento del libro de origen: el escrito en el idioma original del que se traduce.
+	 * Establecimiento del libro de origen: el escrito en el idioma original del que
+	 * se traduce.
 	 * 
 	 * @param rutaLibroOrigen
 	 *            Ruta donde está ubicado el libro de origen.
 	 */
 	public void estableceLibroOrigen(String rutaLibroOrigen) {
 		libroOrigenFichero = new File(rutaLibroOrigen);
+
 		try {
 			libroOrigenDoc = analizaXMLDocBook(new FileInputStream(libroOrigenFichero));
 		} catch (FileNotFoundException fnfe) {
@@ -88,15 +92,17 @@ public class TraducciónDocBook {
 			de.printStackTrace();
 		}
 	}
-	
+
 	/**
-	 * Establecimiento del libro de destino: el escrito en el idioma al que se traduce.
+	 * Establecimiento del libro de destino: el escrito en el idioma al que se
+	 * traduce.
 	 * 
 	 * @param rutaLibroDestino
 	 *            Ruta donde está ubicado el libro de destino.
 	 */
 	public void estableceLibroDestino(String rutaLibroDestino) {
 		libroDestinoFichero = new File(rutaLibroDestino);
+
 		try {
 			libroDestinoDoc = analizaXMLDocBook(new FileInputStream(libroDestinoFichero));
 		} catch (FileNotFoundException fnfe) {
@@ -134,7 +140,7 @@ public class TraducciónDocBook {
 	 * @throws DocumentException
 	 */
 	private Document analizaXMLDocBook(InputStream is) throws DocumentException {
-		SAXReader lector = new SAXReader();
+		SAXReader lector = new NumberedSAXReader();
 		Document libroAnalizado = lector.read(is);
 		return libroAnalizado;
 	}
@@ -152,37 +158,154 @@ public class TraducciónDocBook {
 	}
 
 	/**
-	 * Obtención del nombre del libro con el idioma de origen de la traducción.
+	 * Traducción de los títulos y párrafos encontrados a partir de la raíz de un
+	 * subárbol dado.
+	 * 
+	 * @param escritorPO
+	 *            Escritor del fichero resultado de la traducción (fichero PO).
+	 * @param element
+	 *            Nodo elemento raíz del subárbol.
+	 */
+	public void traduceSubárbol(PrintWriter escritorPO, Element element) {
+		for (int i = 0, númNodos = element.nodeCount(); i < númNodos; i++) {
+			Node nodo = element.node(i);
+
+			if (nodo.getNodeType() == Node.ELEMENT_NODE
+					&& (nodo.getName().equals("title") || nodo.getName().equals("para"))) { 	// Requiere traducción
+				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), xPathSinNS(nodo.getPath())));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"),
+						libroOrigenFichero.getName(), ((NumberedSAXReader.LocationAwareElement) nodo).getLineNumber()));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"), nodo.getText()));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
+						libroDestinoDoc.selectSingleNode(nodo.getUniquePath()).getText()));
+			}
+
+			if (nodo instanceof Element) {
+				traduceSubárbol(escritorPO, (Element) nodo);
+			}
+		}
+	}
+
+	/**
+	 * Obtención del título del libro que se pasa como argumento.
 	 * 
 	 * @param libro
 	 *            Documento contenedor de libro del que se quiere obtener el título.
-	 * @return Nombre del libro en el idioma de origen.
+	 * @return Título del libro que se pasa como argumento.
 	 */
 	public String obténTítuloLibro(Document libro) {
-//		 libroOrigen.selectSingleNode("/*[name()='book']/*[name()='info']/*[name()='title']");
-		Node nodo = libro.selectSingleNode(xpathSinNS("/book/info/title"));
-//		Node nodo = libro.getRootElement().element("info").element("title");
-		return nodo.getText();
+		// Node nodo = libro.getRootElement().element("info").element("title");
+		return this.obténTextoContenidoNodo(libro, "/book/info/title");
 	}
-	
+
 	/**
-	 * Conversión de una expresión XPath para buscar en un XML sin espacio de nombres, en otra que permite hacerlo
-	 * aun dándose uno.
+	 * Obtención del subtítulo del libro que se pasa como argumento.
 	 * 
-	 * @param xpathOriginal	Expresión XPath apropiada para búsquedas sin espacio de nombres.
-	 * @return
+	 * @param libro
+	 *            Documento contenedor de libro del que se quiere obtener el
+	 *            subtítulo.
+	 * @return Subtítulo del libro que se pasa como argumento.
 	 */
-	private String xpathSinNS(String xpathOriginal) {
+	public String obténSubtítuloLibro(Document libro) {
+		return this.obténTextoContenidoNodo(libro, "/book/info/subtitle");
+	}
+
+	/**
+	 * Obtención del texto contenido en el elemento especificado, perteneciente al
+	 * libro que se pasa como argumento.
+	 * 
+	 * @param libro
+	 *            Documento contenedor de libro al que pertenece el elemento.
+	 * @param xPathElemento
+	 *            Expresión XPath para localización del elemento del que se quiere
+	 *            obtener el texto contenido.
+	 * @return Texto contenido en el elemento especificado, del libro que se pasa
+	 *         como argumento.
+	 */
+	private String obténTextoContenidoNodo(Document libro, String xPathElemento) {
+		return libro.selectSingleNode(xPathConNS(xPathElemento)).getText();
+	}
+
+	/**
+	 * Obtención de la representación textual XML del contenido del elemento
+	 * especificado, perteneciente al libro que se pasa como argumento.
+	 * 
+	 * @param libro
+	 *            Documento contenedor de libro al que pertenece el elemento.
+	 * @param xPathElemento
+	 *            Expresión XPath para localización del elemento del que se quiere
+	 *            obtener la representación textual XML del contenido.
+	 * @return Representación textual XML del contenido en el elemento especificado,
+	 *         del libro que se pasa como argumento.
+	 */
+	private String obténXMLContenidoNodo(Document libro, String xPathElemento) {
+		return compactaCadenaXML(libro.selectSingleNode(xPathConNS(xPathElemento)).asXML());
+	}
+
+	/**
+	 * Obtención del número de línea donde se localiza, dentro el fichero XML
+	 * contenedor del libro que constituye el primer argumento, el elemento
+	 * especificado en el segundo argumento.
+	 * 
+	 * @param libro
+	 *            Libro donde consta el elemento del que se quiere obtener el número
+	 *            de línea.
+	 * @param xPathElemento
+	 *            Expresión XPath para localización del elemento del que se quiere
+	 *            obtener el número de línea.
+	 * @return Número de línea donde está localizado el elemento, dentro del libro.
+	 */
+	public int obténLíneaElementoLibro(Document libro, String xPathElemento) {
+		return ((NumberedSAXReader.LocationAwareElement) libro.selectSingleNode(xPathConNS(xPathElemento)))
+				.getLineNumber();
+	}
+
+	/**
+	 * Conversión de una expresión XPath para buscar en un XML sin espacio de
+	 * nombres, en otra que permite hacerlo aun dándose uno.
+	 * 
+	 * @param xPathOriginal
+	 *            Expresión XPath apropiada para búsquedas sin espacio de nombres.
+	 * @return Expresión XPath que permite la búsqueda independientemente de espacio
+	 *         de nombre alguno.
+	 */
+	private String xPathConNS(String xPathOriginal) {
 		StringBuilder sb = new StringBuilder(64);
-		
-		for (String nodo : xpathOriginal.split("/")) {
-			if (nodo.length() == 0) continue;
+
+		for (String nodo : xPathOriginal.split("/")) {
+			if (nodo.length() == 0)
+				continue;
 			sb.append("/*[name()='");
 			sb.append(nodo);
 			sb.append("']");
 		}
-		
+
 		return sb.toString();
+	}
+	
+	/**
+	 * Conversión de una expresión XPath para buscar en un XML independientemente
+	 * de espacios de nombres, en otra que sólo permite hacerlo en ausencia de ellos.
+	 * 
+	 * @param xPathOriginal
+	 *            Expresión XPath apropiada para búsquedas con espacio de nombres.
+	 * @return Expresión XPath que permite la búsqueda sólo en caso de no especificar
+	 * 			  espacios de nombres.
+	 */
+	private String xPathSinNS(String xPathOriginal) {
+		return xPathOriginal.replaceAll("\\*\\[name\\(\\)='", "").replaceAll("'\\]", "");
+	}
+
+	/**
+	 * Compactación de una cadena XML, eliminando saltos de línea y tabuladores.
+	 * 
+	 * @param cadenaXMLOriginal
+	 *            Cadena XML original a compactar.
+	 * @return Resultado de la compactación.
+	 */
+	private String compactaCadenaXML(String cadenaXMLOriginal) {
+		return cadenaXMLOriginal.replaceAll("\n|\r|\t", "");
 	}
 
 	/**
@@ -196,21 +319,56 @@ public class TraducciónDocBook {
 			/*
 			 * Creación de la cabecera del fichero.
 			 */
-			escritorPO.println(String.format(config.getProperty("po.cabecera.línea1"),
-					this.obténTítuloLibro(libroOrigenDoc)));
+			escritorPO.println(
+					String.format(config.getProperty("po.cabecera.línea1"), this.obténTítuloLibro(libroOrigenDoc)));
 			for (int i = 2; i <= 8; i++)
 				escritorPO.println(config.getProperty("po.cabecera.línea" + i));
-			escritorPO.println(String.format(config.getProperty("po.cabecera.línea9"),
-					this.obténTítuloLibro(libroOrigenDoc)));
+			escritorPO.println(
+					String.format(config.getProperty("po.cabecera.línea9"), this.obténTítuloLibro(libroOrigenDoc)));
 			escritorPO.println(String.format(config.getProperty("po.cabecera.línea10"), new Date()));
-			for (int i = 11; i <= 18; i++)
+			for (int i = 11; i <= 17; i++)
 				escritorPO.println(config.getProperty("po.cabecera.línea" + i));
 
 			/*
 			 * Creación de las líneas descriptoras del título y su traducción.
 			 */
-			escritorPO.println(config.getProperty("po.título.línea1"));
-			escritorPO.println(String.format(config.getProperty("po.título.línea2"), libroOrigenFichero.getName(), 4));
+			escritorPO.println(config.getProperty("po.cuerpo.línea0"));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><title>"));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"),
+					libroOrigenFichero.getName(), this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/title")));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
+					this.obténTítuloLibro(libroOrigenDoc)));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
+					this.obténTítuloLibro(libroDestinoDoc)));
+
+			/*
+			 * Creación de las líneas descriptoras del subtítulo y su traducción.
+			 */
+			escritorPO.println(config.getProperty("po.cuerpo.línea0"));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><subtitle>"));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"),
+					libroOrigenFichero.getName(), this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/subtitle")));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
+					this.obténSubtítuloLibro(libroOrigenDoc)));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
+					this.obténSubtítuloLibro(libroDestinoDoc)));
+
+			/*
+			 * Creación de las líneas descriptoras del autor y su traducción.
+			 */
+			escritorPO.println(config.getProperty("po.cuerpo.línea0"));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><author>"));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"),
+					libroOrigenFichero.getName(), this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/author")));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
+					this.obténXMLContenidoNodo(libroOrigenDoc, "/book/info/author")));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
+					this.obténXMLContenidoNodo(libroDestinoDoc, "/book/info/author")));
+
+			/*
+			 * Creación de las líneas descriptoras del prefacio y su traducción.
+			 */
+			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("preface"));
 
 			escritorPO.close();
 
@@ -218,7 +376,8 @@ public class TraducciónDocBook {
 			BITÁCORA.log(Level.SEVERE, "Error al intentar escribir en el fichero PO: ", fnfe);
 			fnfe.printStackTrace();
 		} catch (UnsupportedEncodingException uee) {
-			BITÁCORA.log(Level.SEVERE, "La codificación de caracteres, especificada para el fichero PO, no está soportada: ", uee);
+			BITÁCORA.log(Level.SEVERE,
+					"La codificación de caracteres, especificada para el fichero PO, no está soportada: ", uee);
 			uee.printStackTrace();
 		}
 	}
