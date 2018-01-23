@@ -158,6 +158,7 @@ public class TraducciónDocBook {
 	public void traduceSubárbol(PrintWriter escritorPO, Element element) {
 		Node nodoOrigen = null, nodoDestino = null;
 		StringTokenizer stNodoOrigen, stNodoDestino = null;
+		String tokenOrigen = null, tokenDestino = null;
 
 		for (int i = 0, númNodos = element.nodeCount(); i < númNodos; i++) {
 			nodoOrigen = element.node(i);
@@ -180,12 +181,21 @@ public class TraducciónDocBook {
 				}
 
 				while (stNodoOrigen.hasMoreTokens()) {
+					tokenOrigen = stNodoOrigen.nextToken();
+					if (stNodoDestino.hasMoreElements()) {
+						tokenDestino = stNodoDestino.nextToken();
+					} else {
+						tokenDestino = null;
+					}
+					if (tokenOrigen.equals(" ") || tokenDestino == null || tokenDestino.equals(" ")) {
+						continue;
+					}
+
 					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
-							stNodoOrigen.nextToken() + (stNodoOrigen.hasMoreTokens() ? stNodoOrigen.nextToken() : "")));
+							tokenOrigen + (stNodoOrigen.hasMoreTokens() ? stNodoOrigen.nextToken() : "")));
 					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
 							nodoDestino != null
-									? stNodoDestino.nextToken()
-											+ (stNodoDestino.hasMoreTokens() ? stNodoDestino.nextToken() : "")
+									? tokenDestino + (stNodoDestino.hasMoreTokens() ? stNodoDestino.nextToken() : "")
 									: "[*** Sin traducción ***]"));
 				}
 			}
