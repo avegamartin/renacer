@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -130,8 +131,8 @@ public class TraducciónDocBook {
 
 	/**
 	 * Análisis de ficheros XML contenedores de libros esquematizados según el
-	 * estándar DocBook, y conversión de los mismos a un apropiado árbol de objetos
-	 * Java, según el API DOM.
+	 * estándar DocBook, y conversión de los mismos a un árbol de objetos Java
+	 * apropiado.
 	 * 
 	 * @param is
 	 *            Flujo de entrada con un fichero XML conteniendo un libro según el
@@ -145,18 +146,6 @@ public class TraducciónDocBook {
 		return libroAnalizado;
 	}
 
-	public void iteraElementos(Element elementoRaíz, String nombreNodo) throws DocumentException {
-		// Iteramos sobre los elementos hijos del raíz
-		for (Iterator<Element> it = elementoRaíz.elementIterator(); it.hasNext();) {
-			Element elemento = it.next();
-			System.out.println(elemento.toString());
-			for (Iterator<Element> it2 = elemento.elementIterator(nombreNodo); it2.hasNext();) {
-				Element elementoNivel2 = it2.next();
-				System.out.println("  >> " + elementoNivel2.toString());
-			}
-		}
-	}
-
 	/**
 	 * Traducción de los títulos y párrafos encontrados a partir de la raíz de un
 	 * subárbol dado.
@@ -167,22 +156,42 @@ public class TraducciónDocBook {
 	 *            Nodo elemento raíz del subárbol.
 	 */
 	public void traduceSubárbol(PrintWriter escritorPO, Element element) {
-		for (int i = 0, númNodos = element.nodeCount(); i < númNodos; i++) {
-			Node nodo = element.node(i);
+		Node nodoOrigen = null, nodoDestino = null;
+		StringTokenizer stNodoOrigen, stNodoDestino = null;
 
-			if (nodo.getNodeType() == Node.ELEMENT_NODE
-					&& (nodo.getName().equals("title") || nodo.getName().equals("para"))) { 	// Requiere traducción
+		for (int i = 0, númNodos = element.nodeCount(); i < númNodos; i++) {
+			nodoOrigen = element.node(i);
+
+			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE
+					&& (nodoOrigen.getName().equals("title") || nodoOrigen.getName().equals("para"))) { // Requiere
+																										// traducción
 				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), xPathSinNS(nodo.getPath())));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"),
-						libroOrigenFichero.getName(), ((NumberedSAXReader.LocationAwareElement) nodo).getLineNumber()));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"), nodo.getText()));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
-						libroDestinoDoc.selectSingleNode(nodo.getUniquePath()).getText()));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"),
+						expresaRutaComoNodos(xPathSinNS(nodoOrigen.getPath()))));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"), libroOrigenFichero.getName(),
+						((NumberedSAXReader.LocationAwareElement) nodoOrigen).getLineNumber()));
+
+				nodoDestino = libroDestinoDoc.selectSingleNode(nodoOrigen.getUniquePath());
+				stNodoOrigen = new StringTokenizer(nodoOrigen.getText(), ".?!", true);
+				if (nodoDestino != null) {
+					stNodoDestino = new StringTokenizer(nodoDestino.getText(), ".?!", true);
+				} else {
+					stNodoDestino = null;
+				}
+
+				while (stNodoOrigen.hasMoreTokens()) {
+					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
+							stNodoOrigen.nextToken() + (stNodoOrigen.hasMoreTokens() ? stNodoOrigen.nextToken() : "")));
+					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
+							nodoDestino != null
+									? stNodoDestino.nextToken()
+											+ (stNodoDestino.hasMoreTokens() ? stNodoDestino.nextToken() : "")
+									: "[*** Sin traducción ***]"));
+				}
 			}
 
-			if (nodo instanceof Element) {
-				traduceSubárbol(escritorPO, (Element) nodo);
+			if (nodoOrigen instanceof Element) {
+				traduceSubárbol(escritorPO, (Element) nodoOrigen);
 			}
 		}
 	}
@@ -276,25 +285,43 @@ public class TraducciónDocBook {
 		for (String nodo : xPathOriginal.split("/")) {
 			if (nodo.length() == 0)
 				continue;
-			sb.append("/*[name()='");
-			sb.append(nodo);
-			sb.append("']");
+			sb.append("/*[name()='").append(nodo).append("']");
 		}
 
 		return sb.toString();
 	}
-	
+
 	/**
-	 * Conversión de una expresión XPath para buscar en un XML independientemente
-	 * de espacios de nombres, en otra que sólo permite hacerlo en ausencia de ellos.
+	 * Conversión de una expresión XPath para buscar en un XML independientemente de
+	 * espacios de nombres, en otra que sólo permite hacerlo en ausencia de ellos.
 	 * 
 	 * @param xPathOriginal
 	 *            Expresión XPath apropiada para búsquedas con espacio de nombres.
-	 * @return Expresión XPath que permite la búsqueda sólo en caso de no especificar
-	 * 			  espacios de nombres.
+	 * @return Expresión XPath que permite la búsqueda sólo en caso de no
+	 *         especificar espacios de nombres.
 	 */
 	private String xPathSinNS(String xPathOriginal) {
 		return xPathOriginal.replaceAll("\\*\\[name\\(\\)='", "").replaceAll("'\\]", "");
+	}
+
+	/**
+	 * Conversión de una expresión XPath para buscar elementos XML, en una secuencia
+	 * de nodos en notación de elementos XML clásica.
+	 * 
+	 * @param xPathOriginal
+	 *            Expresión XPath de dirección de un elemento XML.
+	 * @return Ruta XPath convertida en una secuencia de nodos (elementos) XML.
+	 */
+	private String expresaRutaComoNodos(String xPathOriginal) {
+		StringBuilder sb = new StringBuilder(64);
+
+		for (String nodo : xPathOriginal.split("/")) {
+			if (nodo.length() == 0)
+				continue;
+			sb.append("<").append(nodo).append(">");
+		}
+
+		return sb.toString();
 	}
 
 	/**
@@ -334,37 +361,39 @@ public class TraducciónDocBook {
 			 */
 			escritorPO.println(config.getProperty("po.cuerpo.línea0"));
 			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><title>"));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"),
-					libroOrigenFichero.getName(), this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/title")));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
-					this.obténTítuloLibro(libroOrigenDoc)));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
-					this.obténTítuloLibro(libroDestinoDoc)));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"), libroOrigenFichero.getName(),
+					this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/title")));
+			escritorPO.println(
+					String.format(config.getProperty("po.cuerpo.línea3"), this.obténTítuloLibro(libroOrigenDoc)));
+			escritorPO.println(
+					String.format(config.getProperty("po.cuerpo.línea4"), this.obténTítuloLibro(libroDestinoDoc)));
 
 			/*
 			 * Creación de las líneas descriptoras del subtítulo y su traducción.
 			 */
 			escritorPO.println(config.getProperty("po.cuerpo.línea0"));
 			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><subtitle>"));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"),
-					libroOrigenFichero.getName(), this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/subtitle")));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
-					this.obténSubtítuloLibro(libroOrigenDoc)));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
-					this.obténSubtítuloLibro(libroDestinoDoc)));
+			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"), libroOrigenFichero.getName(),
+					this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/subtitle")));
+			escritorPO.println(
+					String.format(config.getProperty("po.cuerpo.línea3"), this.obténSubtítuloLibro(libroOrigenDoc)));
+			escritorPO.println(
+					String.format(config.getProperty("po.cuerpo.línea4"), this.obténSubtítuloLibro(libroDestinoDoc)));
 
 			/*
-			 * Creación de las líneas descriptoras del autor y su traducción.
+			 * Creación de las líneas descriptoras del autor y su traducción, si están
+			 * especificados.
 			 */
-			escritorPO.println(config.getProperty("po.cuerpo.línea0"));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><author>"));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"),
-					libroOrigenFichero.getName(), this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/author")));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
-					this.obténXMLContenidoNodo(libroOrigenDoc, "/book/info/author")));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
-					this.obténXMLContenidoNodo(libroDestinoDoc, "/book/info/author")));
-
+			if (libroOrigenDoc.selectSingleNode(xPathConNS("/book/info/author")) != null) {
+				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><author>"));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"), libroOrigenFichero.getName(),
+						this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/author")));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
+						this.obténXMLContenidoNodo(libroOrigenDoc, "/book/info/author")));
+				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
+						this.obténXMLContenidoNodo(libroDestinoDoc, "/book/info/author")));
+			}
 			/*
 			 * Creación de las líneas descriptoras del prefacio y su traducción.
 			 */
