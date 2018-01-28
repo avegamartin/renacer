@@ -16,8 +16,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.AbstractSequentialList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -152,18 +154,21 @@ public class TraducciónDocBook {
 	 * 
 	 * @param escritorPO
 	 *            Escritor del fichero resultado de la traducción (fichero PO).
-	 * @param element
+	 * @param elementoRaízSubárbol
 	 *            Nodo elemento raíz del subárbol.
 	 */
-	public void traduceSubárbol(PrintWriter escritorPO, Element element) {
+	public void traduceSubárbol(PrintWriter escritorPO, Element elementoRaízSubárbol) {
 		Node nodoOrigen = null, nodoDestino = null;
 		StringTokenizer stNodoOrigen, stNodoDestino = null;
 		String tokenOrigen = null, tokenDestino = null;
+		LinkedList<String> listaFrasesOrigen = new LinkedList<String>(), listaFrasesDestino = new LinkedList<String>();
 
-		for (int i = 0, númNodos = element.nodeCount(); i < númNodos; i++) {
-			nodoOrigen = element.node(i);
+		// Navegación por las ramas del subárbol.
+		for (int i = 0, númNodos = elementoRaízSubárbol.nodeCount(); i < númNodos; i++) {
+			nodoOrigen = elementoRaízSubárbol.node(i);
 
 			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE
+//					&& ((Element) nodoOrigen).nodeCount() == 1
 					&& (nodoOrigen.getName().equals("title") || nodoOrigen.getName().equals("para"))) { // Requiere
 																										// traducción
 				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
@@ -177,26 +182,51 @@ public class TraducciónDocBook {
 				if (nodoDestino != null) {
 					stNodoDestino = new StringTokenizer(nodoDestino.getText(), ".?!", true);
 				} else {
-					stNodoDestino = null;
+					escritorPO.println("[*** Sin traducción ***]");
+					continue;
 				}
 
+				listaFrasesOrigen.clear();
+				listaFrasesDestino.clear();
+
+				// Descomposición de elementos traducibles en las frases que los componen.
 				while (stNodoOrigen.hasMoreTokens()) {
-					tokenOrigen = stNodoOrigen.nextToken();
-					if (stNodoDestino.hasMoreElements()) {
-						tokenDestino = stNodoDestino.nextToken();
+					tokenOrigen = stNodoOrigen.nextToken() // Incluido token separador
+							+ (stNodoOrigen.hasMoreTokens() ? stNodoOrigen.nextToken() : "");
+
+					/*
+					 * Si la frase es demasiado corta para ser considerada por separado; se
+					 * concatena a la anterior.
+					 */
+					if (tokenOrigen.length() <= 4) {
+						listaFrasesOrigen.addLast(listaFrasesOrigen.removeLast() + tokenOrigen);
 					} else {
-						tokenDestino = null;
+						listaFrasesOrigen.addLast(tokenOrigen);
 					}
-					if (tokenOrigen.equals(" ") || tokenDestino == null || tokenDestino.equals(" ")) {
+
+					if (stNodoDestino.hasMoreElements()) {
+						tokenDestino = stNodoDestino.nextToken()
+								+ (stNodoDestino.hasMoreTokens() ? stNodoDestino.nextToken() : "");
+					} else {
 						continue;
 					}
 
-					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
-							tokenOrigen + (stNodoOrigen.hasMoreTokens() ? stNodoOrigen.nextToken() : "")));
-					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
-							nodoDestino != null
-									? tokenDestino + (stNodoDestino.hasMoreTokens() ? stNodoDestino.nextToken() : "")
-									: "[*** Sin traducción ***]"));
+					if (tokenDestino.length() <= 4) {
+						listaFrasesDestino.addLast(listaFrasesDestino.removeLast() + tokenDestino);
+					} else {
+						listaFrasesDestino.addLast(tokenDestino);
+					}
+				}
+
+				for (int j = 0, númFrases = listaFrasesOrigen.size(); j < númFrases; j++) {
+					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"), listaFrasesOrigen.get(j)));
+					try {
+						escritorPO.println(
+								String.format(config.getProperty("po.cuerpo.línea4"), listaFrasesDestino.get(j)));
+					} catch (IndexOutOfBoundsException ioobe) {
+						escritorPO.println(
+								String.format(config.getProperty("po.cuerpo.línea4"), "[*** Sin traducción ***]"));
+					}
 				}
 			}
 
@@ -351,7 +381,7 @@ public class TraducciónDocBook {
 	public void generaFicheroPO() {
 		PrintWriter escritorPO;
 		try {
-			escritorPO = new PrintWriter("fichero.po", "UTF-8");
+			escritorPO = new PrintWriter("src/test/resources/examples/fichero.po", "UTF-8");
 
 			/*
 			 * Creación de la cabecera del fichero.
@@ -404,10 +434,21 @@ public class TraducciónDocBook {
 				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
 						this.obténXMLContenidoNodo(libroDestinoDoc, "/book/info/author")));
 			}
+			
 			/*
 			 * Creación de las líneas descriptoras del prefacio y su traducción.
 			 */
 			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("preface"));
+			
+			/*
+			 * Creación de las líneas descriptoras de los reconocimientos y su traducción.
+			 */
+			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("acknowledgements"));
+			
+			/*
+			 * Creación de las líneas descriptoras de los capítulos y su traducción.
+			 */
+			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("chapter"));
 
 			escritorPO.close();
 

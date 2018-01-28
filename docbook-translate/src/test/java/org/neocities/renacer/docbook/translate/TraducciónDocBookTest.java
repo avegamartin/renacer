@@ -24,10 +24,10 @@ public class TraducciónDocBookTest extends TestCase {
 	 */
 	public void testAnalizaXMLDocBook() {
 		TraducciónDocBook traducción = new TraducciónDocBook();
-		traducción.estableceLibroOrigen("src/test/resources/examples/book-en_GB.xml");
-		traducción.estableceLibroDestino("src/test/resources/examples/book-es_ES.xml");
+		traducción.estableceLibroOrigen("src/test/resources/examples/book-en-2_GB.xml");
+		traducción.estableceLibroDestino("src/test/resources/examples/book-es-2_ES.xml");
 		assertEquals(traducción.getLibroOrigenDoc().getXMLEncoding(), "UTF-8");
-		assertEquals(traducción.obténTítuloLibro(traducción.getLibroOrigenDoc()), "Excellence in Theological Educational");
+		assertEquals("Leadership in Theological Education Volume 1", traducción.obténTítuloLibro(traducción.getLibroOrigenDoc()));
 		traducción.generaFicheroPO();
 	}
 }

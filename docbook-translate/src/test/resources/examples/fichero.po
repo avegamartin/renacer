@@ -1,0 +1,333 @@
+# Leadership in Theological Education Volume 1 ICETE
+# Copyright (C) YEAR Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Leadership in Theological Education Volume 1 ICETE\n"
+"POT-Creation-Date: 2018-01-28 23:12+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Gustavo Mena <gusmr1978@gmail.com>\n"
+"Language-Team: \n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. type: Content of: <book><info><title>
+#: book-en-2_GB.xml:4
+msgid "Leadership in Theological Education Volume 1"
+msgstr "Liderazgo en Educación Teológica Volumen 1"
+
+#. type: Content of: <book><info><subtitle>
+#: book-en-2_GB.xml:5
+msgid "Foundations for Academic Leadership"
+msgstr "Fundamentos para el Liderazgo Académico"
+
+#. type: Content of: <book><preface><info><title>
+#: book-en-2_GB.xml:7
+msgid "Foreword"
+msgstr "Prefacio"
+
+#. type: Content of: <book><preface><para>
+#: book-en-2_GB.xml:9
+msgid "For any social group to be sustainable, it must focus its attention on the formation of its leadership as well as its members."
+msgstr "La sustentabilidad de todo grupo social depende de la atención que se dé tanto a la formación de su liderazgo como de sus miembros."
+msgid " The same is true of the church."
+msgstr " Esto también se aplica a la Iglesia."
+msgid " This need for leadership development is particularly acute whenever the church experiences significant quantitative growth, in order to prevent the church from drifting away from its central mission and values."
+msgstr " Esta necesidad de desarrollar el liderazgo se intensifica cada vez que la Iglesia experimenta un crecimiento numérico significativo para evitar que se desvíe de su misión y sus valores centrales."
+msgid " As Philip Jenkins, Andrew Walls and Lamin Sanneh have shown, the center of evangelicalism, indeed of the church as a whole, has shifted from the West to the global South and East."
+msgstr " Como Philip Jenkins, Andrew Walls y Lamin Sanneh lo han expuesto, el centro del  y, en efecto, de la Iglesia como un todo, se ha mudado del occidente al sur y al oriente del globo."
+msgid " It is in the “Majority World” that the greatest growth as well as the greatest risks are taking place."
+msgstr " En el «mundo mayoritario» está experimentándose el crecimiento, así como los riesgos más grandes."
+msgid " The evangelical theological school plays a central role in the growth and sustainability of the church."
+msgstr " La institución teológica juega un papel importante en el crecimiento y sostenimiento de la Iglesia."
+msgid " If the mission of the church is to reach and to serve the world, the mission of the theological training institutions is to serve the church by training leadership for her mission – the theological school is not an end in itself, but a missional instrument in the hands of the church.  "
+msgstr " Si la misión de la Iglesia es alcanzar y servir al mundo, preparando liderazgo para su misión, entonces, la institución teológica no es un fin en sí misma, sino un instrumento misional en sus manos. "
+
+#. type: Content of: <book><preface><para>
+#: book-en-2_GB.xml:10
+msgid "At the very heart of this role of the school is the activity of the head of the institution (president, principal) and the chief academic officer (CAO – dean, director of studies, etc.)."
+msgstr "Al centro de esta función de la institución está la actividad de la cabeza de la institución (rector, director) y del director del área académica (CAO [por sus siglas en inglés], el decano o director académico)."
+msgid " While the institutional head leads the institution overall and takes the vital decision concerning the achievement of the school’s mission and vision, he or she works in vital tandem with the CAO so that the latter can “lead from the center,” to paraphrase the title of a book by Jeanne McLean."
+msgstr " En tanto que el líder institucional dirige a toda la institución y toma decisiones vitales en cuanto al logro de la misión y visión, también trabaja en colaboración con el decano, quien «dirige desde el centro», para parafrasear el título del libro de Jeanne McLean."
+msgid " This center is the intersection where chief executive, faculty, students, board, and stakeholders meet and work together in the learning community."
+msgstr " Este centro es la intersección en donde el director ejecutivo, el cuerpo docente, los estudiantes, la junta directiva y los grupos interesados se reúnen y trabajan juntos dentro de la comunidad académica."
+msgid " Despite the clear importance of these roles, chief executives and chief academic officers of theological schools are often thrust into this job without professional training."
+msgstr " A pesar de la importancia evidente de esas funciones, los directores ejecutivos y directores de asuntos académicos de las instituciones teológicas casi siempre son lanzados a ese trabajo sin que cuenten con la preparación profesional."
+msgid " The CAOs often find themselves in this post because: (a) they are organized; (b) they are available; (c) they get along with others in the institution."
+msgstr " Los directores de asuntos académicos a menudo se encuentran en ese puesto porque: a) son organizados; b) están disponibles; c) se llevan bien con otros en la institución."
+msgid " However, they so often find themselves ill-equipped for the task that is before them, with few resources, with little support for a role that is often misunderstood by their peers."
+msgstr " Sin embargo, muchas veces están mal equipados para la labor que tienen de frente, con pocos recursos, poco apoyo para ejercer una función que es malinterpretada por sus colegas."
+msgid " It is no wonder that their “shelf life” in this post is often relatively short."
+msgstr " No es de extrañar que su «vida útil» en ese puesto tienda a ser relativamente corta."
+msgid " Their work and their calling puts themselves at the nerve center of the institution, yet their lack of professional preparation and support can frustrate them and weaken the institution as a whole, and thus the fulfillment of its calling."
+msgstr " Su trabajo y su llamado los pone en el punto neurálgico de la institución, pero su falta de preparación profesional y apoyo puede frustrarlos y debilitar a la institución como un todo, y de esa manera, el cumplimiento de su llamado."
+msgid " These dedicated men and women do not deserve such a fate."
+msgstr " Esos dedicados hombres y mujeres no merecen ese destino."
+msgid " This volume, and the ones that will follow, God willing, intend to equip and resource chief executives and chief academic officers in evangelical theological institutions for greater satisfaction and fulfillment."
+msgstr " Este volumen, y los que seguirán, Dios mediante, tienen el propósito de equipar y proporcionar recursos a los directores ejecutivos y a los directores de asuntos académicos de las instituciones teológicas evangélicas para que encuentren una satisfacción y ejecución mayores."
+msgid " We believe that this will result, not only in the well-being and longevity of the academic officers, but also in the effectiveness of the institution itself in realizing its mission and calling in behalf of church, in collaboration and synergy with neighboring sister institutions, and, ultimately, for the sake of the church and the ."
+msgstr " Creemos que esto resultará no solamente en el bienestar y la longevidad de los directores de asuntos académicos, sino también en la efectividad de la institución en sí, al darse cuenta de su misión y llamado en nombre de la Iglesia, con la colaboración y sinergia de instituciones hermanas y, en última instancia, para el bien de la Iglesia y de la ."
+msgid " This is our intent and our prayer for the present book and its future companion volumes.  "
+msgstr " Esa es nuestra intención y oración para este libro y los volúmenes futuros que lo acompañaran. "
+
+#. type: Content of: <book><preface><para>
+#: book-en-2_GB.xml:11
+msgid "
+    
+  "
+msgstr "
+    
+  "
+
+#. type: Content of: <book><preface><para>
+#: book-en-2_GB.xml:14
+msgid "International Director Emeritus, ICETE "
+msgstr "Director Internacional Emérito de ICETE "
+
+#. type: Content of: <book><acknowledgements><info><title>
+#: book-en-2_GB.xml:19
+msgid "Acknowledgments"
+msgstr "Reconocimientos"
+
+#. type: Content of: <book><acknowledgements><para>
+#: book-en-2_GB.xml:21
+msgid "The ICETE Programme for Academic Leadership (IPAL) has developed since 2005 when the first seminar for academic leadership was conducted in Bangkok, Thailand."
+msgstr "El programa de ICETE para el liderazgo académico (IPAL, por sus siglas en inglés) se ha desarrollado desde 2005, cuando el primer seminario para el liderazgo académico se llevó a cabo en Bangkok, Tailandia."
+msgid " Since then, many training sessions for capacity building have been arranged in different parts of the world."
+msgstr " Desde entonces, se han organizado muchos seminarios de preparación para desarrollar las capacidades de los líderes académicos en distintas partes del mundo."
+msgid " The project of this book on the Foundations for Academic Leadership emerged during the seminars."
+msgstr " El proyecto de este libro sobre los  surgió durante los seminarios."
+msgid " Many participants expressed the need for a textbook that provides helpful insights into the ministry of academic leadership."
+msgstr " Muchos participantes expresaron la necesidad de un libro de texto que le dé perspectivas útiles al ministerio del liderazgo académico."
+msgid " As editors we trust that the various contributions will provide helpful insights to academic leaders which they can implement in theological education.  "
+msgstr " Como editores, confiamos en que las diversas contribuciones les provean perspectivas útiles a los líderes académicos que ellos puedan implementar en la educación teológica. "
+
+#. type: Content of: <book><acknowledgements><para>
+#: book-en-2_GB.xml:22
+msgid "This is a project of the International Council for Evangelical Theological Education (ICETE)."
+msgstr "Este es un proyecto del Concilio Internacional para la Educación Teológica Evangélica (ICETE, por sus siglas en inglés)."
+msgid " As editors we are grateful for the encouragement and support of the ICETE leadership in particular of Dr Paul Sanders, International Director Emeritus of ICETE and Dr Riad Kassis, International Director of ICETE.  "
+msgstr " Como editores estamos agradecidos por el ánimo y apoyo del liderazgo de ICETE, en particular del doctor Paul Sanders, Director Internacional Emérito de ICETE, y del doctor Riad Kassis, Director Internacional de ICETE. "
+
+#. type: Content of: <book><acknowledgements><para>
+#: book-en-2_GB.xml:23
+msgid "We are grateful for the different contributors whose expertise and experience in theological education is evident as they address the different topics of this book."
+msgstr "Estamos agradecidos por los distintos contribuyentes, cuyo profesionalismo y experiencia en la educación teológica es evidente, a medida que tratan los distintos temas de este libro."
+msgid " They come from different cultural backgrounds and serve in theological education in different parts of the world."
+msgstr " Ellos son de distintos contextos culturales y trabajan en la educación teológica en distintas partes del mundo."
+msgid " Involving educators with cross-cultural experience has been a main objective in producing this book."
+msgstr " Involucrar a educadores con experiencia transcultural en distintas partes del mundo ha sido un objetivo principal al producir este libro."
+msgid " Without their willingness to spend time and energy in compiling valuable insights it would not have been possible to accomplish this project."
+msgstr " Sin su disposición a dedicar tiempo y energía para compilar perspectivas valiosas no habría sido posible lograr este proyecto."
+msgid " We also want to thank Jennifer Jagerson and Halee Scott who proofread the chapters and made valuable suggestions for improvement.  "
+msgstr " También queremos agradecer a Jennifer Jagerson y a Halee Scott, quienes editaron los capítulos e hicieron sugerencias valiosas para mejorarlos. "
+
+#. type: Content of: <book><acknowledgements><para>
+#: book-en-2_GB.xml:24
+msgid "Without the financial support of a generous foundation it would not have been possible to produce this book."
+msgstr "Sin el apoyo financiero de una fundación generosa no habría sido posible producir este libro."
+msgid " We are grateful to those who had to approve the project.  "
+msgstr " Estamos agradecidos con quienes aprobaron el proyecto. "
+
+#. type: Content of: <book><acknowledgements><para>
+#: book-en-2_GB.xml:25
+msgid "Finally, and above all, we want to thank God for enabling us to accomplish this project in the midst of many other challenges.  "
+msgstr "Finalmente, y sobre todo, queremos agradecer a Dios por permitirnos lograr este proyecto en medio de muchos otros desafíos. "
+
+#. type: Content of: <book><acknowledgements><para>
+#: book-en-2_GB.xml:26
+msgid "
+    
+  "
+msgstr "
+    
+  "
+
+#. type: Content of: <book><acknowledgements><para>
+#: book-en-2_GB.xml:29
+msgid "Editors "
+msgstr "Editores "
+
+#. type: Content of: <book><chapter><info><title>
+#: book-en-2_GB.xml:34
+msgid "Introduction"
+msgstr "Introducción"
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:36
+msgid "Academic leaders play an essential role in the accomplishment of the mission and vision of academic institutions."
+msgstr "Los líderes académicos juegan un papel esencial para el logro de la misión y la visión de las instituciones académicas."
+msgid " They have often been called to serve at level where they are expected to carry out responsibilities that they have not been trained to perform."
+msgstr " Casi siempre se les ha llamado a trabajar a un nivel en el que se espera que lleven a cabo responsabilidades para las que no han sido preparados."
+msgid " Without distinction of location or type of educational institutions, it is a fact that most of those who are appointed in leadership positions lack the specific training for effective leadership."
+msgstr " No importa el lugar ni el tipo de institución educativa, es un hecho que la mayoría de los que son nombrados para puestos de liderazgo carecen de la preparación específica para que rindan un liderazgo efectivo."
+msgid " In order to assist them in their positions, a substantial number of books addressing issues of Academic Administration and Leadership and related areas are published every year, mainly in the North American context."
+msgstr " Para ayudarlos en sus puestos, cada año se publica una cantidad sustancial de libros que tratan de los asuntos de administración y liderazgo académico y de las áreas relacionadas, especialmente en el contexto norteamericano."
+msgid " However, as we travel to other regions of the globe to offer Seminars for Academic Leaders supported by the ICETE Programme for Academic Leadership (IPAL) we have been confronted with the need for written resources that will provide academic leaders in those regions with the insights needed for the day-to-day challenges in their search for quality and excellence. "
+msgstr " Sin embargo, a medida que viajamos a otras regiones del globo para dar seminarios para líderes académicos apoyados por el Programa de ICETE para el Liderazgo Académico (IPAL, por sus siglas en inglés), nos hemos enfrentado con la necesidad de recursos escritos que les den a los líderes académicos de esas regiones las perspectivas que se necesitan para los desafíos diarios en su búsqueda de calidad y excelencia. "
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:37
+msgid "This book is the first of the Academic Leadership Series, which was conceived at the same time that the ICETE Programme for Academic Leadership (IPAL) was officially established in September, 2010, at the ICETE Executive Board meeting in Medellin, Colombia."
+msgstr "Este libro es el primero de la Serie de liderazgo académico, que fue concebida al mismo tiempo que el Programa de ICETE para el Liderazgo Académico (IPAL) se estableció oficialmente en septiembre de 2010, en la reunión de junta de ejecutivos de ICETE en Medellín, Colombia."
+msgid " At that time, Fritz was appointed to serve as the Programme Coordinator."
+msgstr " En ese entonces, Fritz fue nombrado para trabajar como coordinador del programa."
+msgid " Among its other responsibilities, the IPAL is committed to provide training to academic leaders in theological schools related to the eight regional ICETE-Accrediting Agencies, as well as publish the materials used in this training."
+msgstr " Entre sus otras responsabilidades, IPAL tiene el compromiso de dar capacitación a los líderes académicos de las instituciones teológicas relacionadas con las ocho Agencias acreditadoras de ICETE, así como de publicar los materiales que se usan en ese entrenamiento."
+msgid " After a number of conversations with ICETE Executive Board members during the Triennial Continental Conference of AETAL (Association of Evangelical Theological Education in Latin America), that followed the board meeting in Medellin, Colombia, I (Orbelina) was invited to join their project, serving together with Fritz as an editor of the series.  "
+msgstr " Después de varias conversaciones con los miembros de la junta ejecutiva de ICETE, durante la Conferencia Continental Trienal de AETAL (Asociación Evangélica de Educación Teológica en América Latina) que siguió a la reunión de la junta en Medellín, Colombia, yo (Orbelina) recibí la invitación de unirme a su proyecto para trabajar junto con Fritz como editora de la serie. "
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:38
+msgid "Thus, the purpose of this project is to provide quality written resources for use in the ICETE Programme for Academic Leadership (IPAL) seminars held around the world."
+msgstr "Así que, el propósito de este proyecto es proporcionar recursos escritos de calidad para usarlos en los seminarios del programa de ICETE para el liderazgo académico (IPAL) que se llevan a cabo alrededor del mundo."
+msgid " This initial series consists of three textbooks: "
+msgstr " Esta serie inicial consiste de tres libros de texto: "
+
+#. type: Content of: <book><chapter><orderedlist><listitem><para>
+#: book-en-2_GB.xml:41
+msgid "1) Foundations for Academic Leadership "
+msgstr "1) Fundamentos para el liderazgo académico "
+
+#. type: Content of: <book><chapter><orderedlist><listitem><para>
+#: book-en-2_GB.xml:44
+msgid "2) Foundations for Curriculum Development "
+msgstr "2) Fundamentos para el desarrollo de currículo en la educación teológica  "
+
+#. type: Content of: <book><chapter><orderedlist><listitem><para>
+#: book-en-2_GB.xml:47
+msgid "3) Foundations for Faculty Development.  "
+msgstr "3) Fundamentos para el desarrollo del cuerpo docente en la educación teológica  "
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:50
+msgid "This book on Foundations for Academic Leadership is not intended to be a comprehensive text on academic leadership."
+msgstr "Este libro sobre  no tiene la intención de ser un texto exhaustivo sobre el liderazgo académico."
+msgid " Rather, our purpose is to present essential aspects that academic leaders in theological institutions and seminaries need to be aware of."
+msgstr " Más bien, nuestro propósito es presentar aspectos esenciales de los que los líderes académicos de las instituciones teológicas y seminarios necesitan estar conscientes."
+msgid " As a result, we have structured it into four main sections in which different authors have contributed with topics that represent their areas of expertise as well as their understanding of the hard work that academic leaders exercise on behalf of their institutions.  "
+msgstr " Como resultado, lo hemos estructurado en cuatro secciones principales en las que distintos autores han contribuido con temas que representan sus áreas de experiencia, así como su comprensión del trabajo difícil que los líderes académicos ejercen a favor de sus instituciones. "
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:51
+msgid "Part I addresses the Foundations for Theological Education."
+msgstr "La primera parte trata de los fundamentos para la educación teológica."
+msgid " The first chapter establishes the biblical foundations for theological education from three perspectives including the well-being of the people of God, the advancement of the mission of God, and the preservation of the integrity of the Christian faith."
+msgstr " El primer capítulo establece los fundamentos bíblicos para la educación teológica desde tres perspectivas que incluyen el bienestar del pueblo de Dios, el avance de la misión de Dios y la conservación de la integridad de la fe cristiana."
+msgid " It concludes that theological learning is a necessary element in the unfolding of the divine purpose."
+msgstr " Concluye en que el aprendizaje teológico es un elemento necesario para el desarrollo del propósito divino."
+msgid " The second chapter provides guidelines for the development of an operational philosophy of theological education, which the author proposes as a practical way to move from philosophy to strategy."
+msgstr " El segundo capítulo ofrece pautas para el desarrollo de una filosofía operacional de la educación teológica, que el autor propone como una forma práctica de trasladarse de la filosofía a la estrategia."
+msgid " In chapter 3, the author proposes that every theological institution needs a promised land and that every institution needs a Moses to take them there."
+msgstr " En el capítulo tres, el autor propone que cada institución teológica necesita una Tierra Prometida y que cada institución necesita un Moisés para que los lleve allí."
+msgid " The way to move from vision to reality requires well defined vision, mission, and values in order to shape objectives in theological education."
+msgstr " La forma para trasladarse de la visión a la realidad requiere de visión, misión y valores bien definidos para darle forma a los objetivos de la educación teológica."
+msgid " Chapter 4 discusses factors that contribute to providing the Christian community and the broader society with graduates that can faithfully demonstrate the quality of their theological education through the excellence of their own thinking and ministry."
+msgstr " El capítulo cuatro discute los factores que contribuyen a proveer a la comunidad cristiana y a la sociedad en general graduados que pueden demostrar fielmente la calidad de su educación teológica, a través de la excelencia de su propio pensamiento y ministerio."
+msgid " The author emphasizes that “the most important factor of all is that the educational community is a learning community, committed to not only do things well, but to constantly do them better.”  "
+msgstr " El autor enfatiza en que «el factor más importante es que la comunidad educativa es una comunidad de aprendizaje, comprometida no solo a hacer bien las cosas, sino a hacerlas mejor constantemente». "
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:52
+msgid "Part II addresses the characteristics and responsibilities of academic leadership."
+msgstr "La segunda parte trata de las características y responsabilidades del liderazgo académico."
+msgid " In chapters 5 and 6, the author provides insights gained through serving as an academic dean of a theological seminary in Bangkok for many years."
+msgstr " En los capítulos cinco y seis, el autor ofrece sus perspectivas obtenidas durante sus muchos años como decano del Seminario Teológico de Bangkok."
+msgid " Chapter 5 addresses the relationship between the president and the academic dean serving as partners in theological education."
+msgstr " El capítulo cinco trata de la relación entre el rector y el decano, quienes son colaboradores en la educación teológica."
+msgid " The aspects discussed in the chapter assume an organizational structure in which the dean reports and works directly with the president of the institution."
+msgstr " Los aspectos que se discuten en el capítulo asumen una estructura organizacional, en la que el decano le rinde cuentas y trabaja directamente con el rector de la institución."
+msgid " The next chapter focuses on the academic deanship as a ministry and the challenges that the position and functions of the dean pose. "
+msgstr " El capítulo siguiente se enfoca en la decanatura académica como un ministerio y los desafíos que el puesto y sus funciones plantean. "
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:53
+msgid "Part III focuses on some of the crucial practices required in academic administration."
+msgstr "La tercera parte se enfoca en algunas de las prácticas cruciales que se requieren en la administración académica."
+msgid " Chapter 7 provides an explanation of what strategic planning is by contrasting it with what strategic planning is not."
+msgstr " El capítulo siete proporciona una explicación de lo que es la planificación estratégica al contrastarla con lo que no es la planificación estratégica."
+msgid " The author also provides detailed guidelines to develop a strategic plan and some considerations for its implementation taking into account the different levels of the institution’s leadership as well as its faculty."
+msgstr " El autor también da pautas detalladas para desarrollar un plan estratégico y algunas consideraciones para su implementación, tomando en cuenta los distintos niveles del liderazgo de la institución, así como su cuerpo docente."
+msgid " Chapter 8 discusses the accreditation process."
+msgstr " El capítulo ocho discute el proceso de acreditación."
+msgid " Based on his experience in accreditation in the European context, the author helps to understand what accreditation is about as well as some common misconceptions that academic leaders might have."
+msgstr " El autor parte de su experiencia en el contexto europeo para explicar de qué es la acreditación, así como algunos de los conceptos erróneos más comunes entre los líderes académicos."
+msgid " He also addresses the extensive work that accreditation requires."
+msgstr " También, habla del extenso trabajo que requiere la acreditación."
+msgid " Chapter 9 addresses a critical topic that is closely related to accreditation, which is the process of institutional assessment."
+msgstr " El capítulo nueve trata de un tema crucial que está estrechamente relacionado con la acreditación, que es el proceso de la evaluación institucional."
+msgid " Based on his experience in the accreditation of higher education in North America, the author provides practical insights on the what, why and how of assessment, making the readers aware that “assessment is pointless unless it yields improvement.”  "
+msgstr " A partir de su experiencia en la acreditación de la educación superior en Norteamérica, el autor sugiere ideas prácticas sobre el qué, el por qué y el cómo de la evaluación y hace que los lectores estén conscientes de que «la evaluación carece de sentido si no produce mejoras». "
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:54
+msgid "Part IV is composed of three chapters that address different practices that are inherent to effective leadership."
+msgstr "La cuarta parte se compone de tres capítulos que tratan distintas prácticas inherentes al liderazgo efectivo."
+msgid " Chapter 10 focuses on the academic leaders as agents of change."
+msgstr " El capítulo diez se enfoca en los líderes académicos como agentes de cambio."
+msgid " It highlights aspects of organizational change that will help academic leaders have a better understanding of what change is about."
+msgstr " Resalta los aspectos del cambio organizacional que ayudarán a los líderes académicos a tener una mejor comprensión de lo que es el cambio."
+msgid " It also discusses how the environment that surrounds the institution as well as the internal environment and culture of the institution influence change."
+msgstr " También, discute la manera en que el ambiente externo, el ambiente interno y la cultura de la institución, influyen el cambio."
+msgid " Characteristics of change agents and some recommendations for academic leaders are also included in the discussion."
+msgstr " Las características de los agentes de cambio y algunas recomendaciones para los líderes académicos también se incluyen en la discusión."
+msgid " Chapter 11 addresses conflict and the biblical perspective of conflict management."
+msgstr " El capítulo once trata del conflicto y de la perspectiva bíblica del manejo de conflictos."
+msgid " The author provides a practical method for conflict resolution."
+msgstr " El autor sugiere un método práctico para la resolución de conflictos."
+msgid " Finally, chapter 12 is a reflection in which the author delves into his own experience to share what he considers to be the characteristics and competencies needed to effective leadership. "
+msgstr " Finalmente, el capítulo doce es una reflexión en la que el autor ahonda en su propia experiencia para compartir lo que él considera que son las características y competencias que se necesitan para el liderazgo efectivo. "
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:55
+msgid "It is our hope that academic leaders serving in educational institutions will benefit with the reading of each chapter and the reflection and action point sections that follow."
+msgstr "Es nuestra esperanza que los líderes académicos que trabajan en las instituciones educativas se beneficien con la lectura de cada capítulo y con los puntos de reflexión y acción que siguen."
+msgid " These have been designed to help the readers consider how the issues discussed by the authors reflect on their own practices as leaders."
+msgstr " Estos han sido diseñados para ayudar a los lectores a considerar cómo los temas que los autores discuten se reflejan en sus propias prácticas como líderes."
+msgid " We would like to conclude this introduction with the words of Gordon T."
+msgstr " Nos gustaría concluir esta introducción con las palabras de Gordon T."
+msgid " Smith, President of Ambrose University College and Seminary and Professor of Systematic Theology: "
+msgstr " Smith, Rector de la Universidad y Seminario de Ambrosio y profesor de Teología Sistemática: "
+
+#. type: Content of: <book><chapter><blockquote><para>
+#: book-en-2_GB.xml:57
+msgid "Good administrative leaders care about people!"
+msgstr "¡Los líderes administrativos buenos se interesan en la gente!"
+msgid " And they care about good scholarship."
+msgstr " Y se interesan en la calidad académica."
+msgid " And they care about teaching and learning."
+msgstr " Y se interesan en la enseñanza y el aprendizaje."
+msgid " But their work is inherently institutional; their academic discipline, one might say, is the college or university."
+msgstr " Pero su trabajo es inherentemente institucional; su disciplina académica, podría decirse, es la institución o universidad."
+msgid " Their mental and emotional energy – critical thinking, creativity, problem solving, nuanced and complex understanding – is focused on the phenomenon of the institution. "
+msgstr " Su energía mental y emocional —pensamiento crítico, creatividad, solución de problemas, entendimiento matizado y complejo— se enfoca en el fenómeno de la institución. "
+
+#. type: Content of: <book><chapter><blockquote><para><footnote><para>
+#: book-en-2_GB.xml:57
+msgid ". Gordon T"
+msgstr ". Gordon T"
+msgid ". Smith, “Foreword,” in , ed"
+msgstr ". Smith, «Foreword» (Prefacio), en  (Cómo prosperar en el liderazgo: Estrategias para marcar una diferencia en la educación cristiana superior), ed"
+msgid ". Karen A"
+msgstr ". Karen A"
+msgid ". Longman (Abilene, TX: Abilene Christian University Press, 2012), 15. "
+msgstr ". Longman, Abilene, TX, Abilene Christian University Press, 2012, p. 15"
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:59
+msgid "
+    
+  "
+msgstr "
+    
+  "
+
+#. type: Content of: <book><chapter><para>
+#: book-en-2_GB.xml:62
+msgid "Editors "
+msgstr "Editores "
