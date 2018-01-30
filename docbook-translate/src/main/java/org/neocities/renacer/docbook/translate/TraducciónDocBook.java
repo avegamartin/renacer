@@ -1,11 +1,3 @@
-/**
- * Clase generadora de ficheros PO, de descripción de traducción de libros
- * estructurados según subconjuntos de esquemas definidos por el estándar
- * DocBook v5.x.
- * 
- * @author avega
- * 
- */
 package org.neocities.renacer.docbook.translate;
 
 import java.io.File;
@@ -16,8 +8,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.AbstractSequentialList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
@@ -30,17 +26,22 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
+import org.neocities.renacer.util.MutableInteger;
 import org.neocities.renacer.util.NumberedSAXReader;
 
 /**
+ * Clase generadora de ficheros PO, de descripción de traducción de libros
+ * estructurados según subconjuntos de esquemas definidos por el estándar
+ * DocBook v5.x.
+ * 
  * @author avega
- *
  */
 public class TraducciónDocBook {
 
 	private File libroOrigenFichero = null, libroDestinoFichero = null;
 	private Document libroOrigenDoc = null, libroDestinoDoc = null;
 	private static Properties config = new Properties();
+	private HashMap<String, MutableInteger> mapaCadenas = new HashMap<String, MutableInteger>();
 	private final static Logger BITÁCORA = Logger.getLogger(TraducciónDocBook.class.getName());
 
 	/**
@@ -156,19 +157,16 @@ public class TraducciónDocBook {
 	 *            Escritor del fichero resultado de la traducción (fichero PO).
 	 * @param elementoRaízSubárbol
 	 *            Nodo elemento raíz del subárbol.
+	 * @throws NoSuchAlgorithmException
 	 */
-	public void traduceSubárbol(PrintWriter escritorPO, Element elementoRaízSubárbol) {
+	public void traduceSubárbol(PrintWriter escritorPO, Element elementoRaízSubárbol) throws NoSuchAlgorithmException {
 		Node nodoOrigen = null, nodoDestino = null;
-		StringTokenizer stNodoOrigen, stNodoDestino = null;
-		String tokenOrigen = null, tokenDestino = null;
-		LinkedList<String> listaFrasesOrigen = new LinkedList<String>(), listaFrasesDestino = new LinkedList<String>();
 
 		// Navegación por las ramas del subárbol.
 		for (int i = 0, númNodos = elementoRaízSubárbol.nodeCount(); i < númNodos; i++) {
 			nodoOrigen = elementoRaízSubárbol.node(i);
 
 			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE
-//					&& ((Element) nodoOrigen).nodeCount() == 1
 					&& (nodoOrigen.getName().equals("title") || nodoOrigen.getName().equals("para"))) { // Requiere
 																										// traducción
 				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
@@ -178,21 +176,32 @@ public class TraducciónDocBook {
 						((NumberedSAXReader.LocationAwareElement) nodoOrigen).getLineNumber()));
 
 				nodoDestino = libroDestinoDoc.selectSingleNode(nodoOrigen.getUniquePath());
-				stNodoOrigen = new StringTokenizer(nodoOrigen.getText(), ".?!", true);
+
+				StringTokenizer stNodoOrigen, stNodoDestino = null;
+				String textoNodoOrigen = compactaCadenaXML(nodoOrigen.asXML());
+				stNodoOrigen = new StringTokenizer(textoNodoOrigen
+						.substring(textoNodoOrigen.indexOf(">") + 1, textoNodoOrigen.lastIndexOf("<")).trim(), ".?!",
+						true);
 				if (nodoDestino != null) {
-					stNodoDestino = new StringTokenizer(nodoDestino.getText(), ".?!", true);
+					String textoNodoDestino = compactaCadenaXML(nodoDestino.asXML());
+					stNodoDestino = new StringTokenizer(textoNodoDestino
+							.substring(textoNodoDestino.indexOf(">") + 1, textoNodoDestino.lastIndexOf("<")).trim(),
+							".?!", true);
 				} else {
 					escritorPO.println("[*** Sin traducción ***]");
 					continue;
 				}
 
+				LinkedList<String> listaFrasesOrigen = new LinkedList<String>(),
+						listaFrasesDestino = new LinkedList<String>();
 				listaFrasesOrigen.clear();
 				listaFrasesDestino.clear();
 
 				// Descomposición de elementos traducibles en las frases que los componen.
 				while (stNodoOrigen.hasMoreTokens()) {
-					tokenOrigen = stNodoOrigen.nextToken() // Incluido token separador
+					String tokenOrigen = stNodoOrigen.nextToken() // Incluido token separador
 							+ (stNodoOrigen.hasMoreTokens() ? stNodoOrigen.nextToken() : "");
+					String tokenDestino = null;
 
 					/*
 					 * Si la frase es demasiado corta para ser considerada por separado; se
@@ -219,6 +228,14 @@ public class TraducciónDocBook {
 				}
 
 				for (int j = 0, númFrases = listaFrasesOrigen.size(); j < númFrases; j++) {
+					String fraseOrigen = listaFrasesOrigen.get(j), md5FraseOrigen = obténCódigoMD5(fraseOrigen);
+
+					int númRepeticiones = obténRepeticionesDeCadena(md5FraseOrigen);
+					if (númRepeticiones > 1) {
+						escritorPO.println(String.format(config.getProperty("po.cuerpo.línea.contexto"),
+								md5FraseOrigen + "-" + númRepeticiones));
+					}
+
 					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"), listaFrasesOrigen.get(j)));
 					try {
 						escritorPO.println(
@@ -376,10 +393,46 @@ public class TraducciónDocBook {
 	}
 
 	/**
+	 * Obtención del código MD5 correspondiente a una cadena de texto.
+	 * 
+	 * @param cadena
+	 *            Cadena de texto sobre la que generar el código MD5.
+	 * @return Código MD5 correspondiente a la cadena de texto pasada como
+	 *         parámetro.
+	 * @throws NoSuchAlgorithmException
+	 */
+	private String obténCódigoMD5(String cadena) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance("MD5");
+		md.update(cadena.getBytes());
+		byte[] digestión = md.digest();
+		BigInteger bi = new BigInteger(1, digestión);
+		return bi.toString(16);
+	}
+
+	/**
+	 * Obtención del número de repeticiones con las que aparece una cadena dada,
+	 * dentro de un mapa de cadenas mantenida por la clase.
+	 * 
+	 * @param cadena
+	 *            Cadena de la que se quiere obtener el número de repeticiones.
+	 * @return Número de repeticiones de la cadena dentro del mapa mantenido por la
+	 *         clase.
+	 */
+	private int obténRepeticionesDeCadena(String cadena) {
+		MutableInteger mi = mapaCadenas.get(cadena);
+		if (mi == null) {
+			mi = new MutableInteger(0);
+			mapaCadenas.put(cadena, mi);
+		}
+		return mi.inc();
+	}
+
+	/**
 	 * Generación del fichero de traducción PO.
 	 */
 	public void generaFicheroPO() {
-		PrintWriter escritorPO;
+		PrintWriter escritorPO = null;
+
 		try {
 			escritorPO = new PrintWriter("src/test/resources/examples/fichero.po", "UTF-8");
 
@@ -434,21 +487,23 @@ public class TraducciónDocBook {
 				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
 						this.obténXMLContenidoNodo(libroDestinoDoc, "/book/info/author")));
 			}
-			
+
 			/*
 			 * Creación de las líneas descriptoras del prefacio y su traducción.
 			 */
 			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("preface"));
-			
+
 			/*
 			 * Creación de las líneas descriptoras de los reconocimientos y su traducción.
 			 */
 			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("acknowledgements"));
-			
+
 			/*
 			 * Creación de las líneas descriptoras de los capítulos y su traducción.
 			 */
-			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("chapter"));
+			for (Element capítulo : libroOrigenDoc.getRootElement().elements("chapter")) {
+				this.traduceSubárbol(escritorPO, capítulo);
+			}
 
 			escritorPO.close();
 
@@ -459,6 +514,9 @@ public class TraducciónDocBook {
 			BITÁCORA.log(Level.SEVERE,
 					"La codificación de caracteres, especificada para el fichero PO, no está soportada: ", uee);
 			uee.printStackTrace();
+		} catch (NoSuchAlgorithmException nsae) {
+			BITÁCORA.log(Level.SEVERE, "Error de generación de códigos MD5 para procesado de documentos: ", nsae);
+			nsae.printStackTrace();
 		}
 	}
 }
