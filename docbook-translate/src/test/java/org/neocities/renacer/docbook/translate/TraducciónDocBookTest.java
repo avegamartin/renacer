@@ -1,13 +1,11 @@
-/**
- * 
- */
 package org.neocities.renacer.docbook.translate;
 
 import junit.framework.TestCase;
 
 /**
+ * Clase testeadora de la de traducción de documentos contenedores de libros.
+ * 
  * @author avega
- *
  */
 public class TraducciónDocBookTest extends TestCase {
 
