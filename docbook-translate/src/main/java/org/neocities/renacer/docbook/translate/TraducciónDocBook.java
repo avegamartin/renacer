@@ -39,7 +39,7 @@ import org.neocities.renacer.util.ParticionadorFrases;
  */
 public class TraducciónDocBook {
 
-	private File libroOrigenFichero = null, libroDestinoFichero = null;
+	private File libroOrigenFichero = null, libroDestinoFichero = null, ficheroPO = null;
 	private Document libroOrigenDoc = null, libroDestinoDoc = null;
 	private static Properties config = new Properties();
 	private HashMap<String, MutableInteger> mapaCadenas = new HashMap<String, MutableInteger>();
@@ -121,6 +121,17 @@ public class TraducciónDocBook {
 	}
 
 	/**
+	 * Establecimiento del fichero PO, de enfrentamiento de la traducción de origen
+	 * a la de destino.
+	 * 
+	 * @param rutaFicheroPO
+	 *            Ruta donde será ubicado el fichero PO.
+	 */
+	public void estableceFicheroPO(String rutaFicheroPO) {
+		ficheroPO = new File(rutaFicheroPO);
+	}
+
+	/**
 	 * @return the libroOrigenDoc
 	 */
 	public Document getLibroOrigenDoc() {
@@ -170,113 +181,6 @@ public class TraducciónDocBook {
 
 			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE
 					&& (nodoOrigen.getName().equals("title") || nodoOrigen.getName().equals("para"))) { // Requiere
-				// traducción
-				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"),
-						expresaRutaComoNodos(xPathSinNS(nodoOrigen.getPath()))));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"), libroOrigenFichero.getName(),
-						((NumberedSAXReader.LocationAwareElement) nodoOrigen).getLineNumber()));
-
-				nodoDestino = libroDestinoDoc.selectSingleNode(nodoOrigen.getUniquePath());
-
-				StringTokenizer stNodoOrigen, stNodoDestino = null;
-				String textoNodoOrigen = compactaCadenaXML(nodoOrigen.asXML());
-				stNodoOrigen = new StringTokenizer(textoNodoOrigen
-						.substring(textoNodoOrigen.indexOf(">") + 1, textoNodoOrigen.lastIndexOf("<")).trim(), ".?!",
-						true);
-
-				if (nodoDestino != null) {
-					String textoNodoDestino = compactaCadenaXML(nodoDestino.asXML());
-					stNodoDestino = new StringTokenizer(textoNodoDestino
-							.substring(textoNodoDestino.indexOf(">") + 1, textoNodoDestino.lastIndexOf("<")).trim(),
-							".?!", true);
-				} else {
-					escritorPO.println("[*** Sin traducción ***]");
-					continue;
-				}
-
-				LinkedList<String> listaFrasesOrigen = new LinkedList<String>(),
-						listaFrasesDestino = new LinkedList<String>();
-				listaFrasesOrigen.clear();
-				listaFrasesDestino.clear();
-
-				// Descomposición de elementos traducibles en las frases que los componen.
-				while (stNodoOrigen.hasMoreTokens()) {
-					String tokenOrigen = stNodoOrigen.nextToken() // Incluido token separador
-							+ (stNodoOrigen.hasMoreTokens() ? stNodoOrigen.nextToken() : "");
-					String tokenDestino = null;
-
-					/*
-					 * Si la frase es demasiado corta para ser considerada por separado; se
-					 * concatena a la anterior.
-					 */
-					if (tokenOrigen.length() <= 4) {
-						listaFrasesOrigen.addLast(listaFrasesOrigen.removeLast() + tokenOrigen);
-					} else {
-						listaFrasesOrigen.addLast(tokenOrigen);
-					}
-
-					if (stNodoDestino.hasMoreElements()) {
-						tokenDestino = stNodoDestino.nextToken()
-								+ (stNodoDestino.hasMoreTokens() ? stNodoDestino.nextToken() : "");
-					} else {
-						continue;
-					}
-
-					if (tokenDestino.length() <= 4) {
-						listaFrasesDestino.addLast(listaFrasesDestino.removeLast() + tokenDestino);
-					} else {
-						listaFrasesDestino.addLast(tokenDestino);
-					}
-				}
-
-				for (int j = 0, númFrases = listaFrasesOrigen.size(); j < númFrases; j++) {
-					String fraseOrigen = listaFrasesOrigen.get(j), md5FraseOrigen = obténCódigoMD5(fraseOrigen);
-
-					int númRepeticiones = obténRepeticionesDeCadena(md5FraseOrigen);
-					if (númRepeticiones > 1) {
-						escritorPO.println(String.format(config.getProperty("po.cuerpo.línea.contexto"),
-								md5FraseOrigen + "-" + númRepeticiones));
-					}
-
-					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"), listaFrasesOrigen.get(j)));
-					try {
-						escritorPO.println(
-								String.format(config.getProperty("po.cuerpo.línea4"), listaFrasesDestino.get(j)));
-					} catch (IndexOutOfBoundsException ioobe) {
-						escritorPO.println(
-								String.format(config.getProperty("po.cuerpo.línea4"), "[*** Sin traducción ***]"));
-					}
-				}
-
-				continue; // No escaneamos sub-nodos de los nodos traducibles.
-			}
-
-			if (nodoOrigen instanceof Element) {
-				traduceSubárbol(escritorPO, (Element) nodoOrigen);
-			}
-		}
-	}
-
-	/**
-	 * Traducción de los títulos y párrafos encontrados a partir de la raíz de un
-	 * subárbol dado.
-	 * 
-	 * @param escritorPO
-	 *            Escritor del fichero resultado de la traducción (fichero PO).
-	 * @param elementoRaízSubárbol
-	 *            Nodo elemento raíz del subárbol.
-	 * @throws NoSuchAlgorithmException
-	 */
-	public void traduceSubárbol2(PrintWriter escritorPO, Element elementoRaízSubárbol) throws NoSuchAlgorithmException {
-		Node nodoOrigen = null, nodoDestino = null;
-
-		// Navegación por las ramas del subárbol.
-		for (int i = 0, númNodos = elementoRaízSubárbol.nodeCount(); i < númNodos; i++) {
-			nodoOrigen = elementoRaízSubárbol.node(i);
-
-			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE
-					&& (nodoOrigen.getName().equals("title") || nodoOrigen.getName().equals("para"))) { // Requiere
 																										// traducción
 				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
 				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"),
@@ -302,7 +206,7 @@ public class TraducciónDocBook {
 
 				String[] listaFrasesOrigen = particionador.obténFrases(textoNodoOrigen),
 						listaFrasesDestino = particionador.obténFrases(textoNodoDestino);
-				
+
 				for (int j = 0; j < listaFrasesOrigen.length; j++) {
 					String fraseOrigen = listaFrasesOrigen[j], md5FraseOrigen = obténCódigoMD5(fraseOrigen);
 
@@ -314,8 +218,8 @@ public class TraducciónDocBook {
 
 					escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"), listaFrasesOrigen[j]));
 					try {
-						escritorPO.println(
-								String.format(config.getProperty("po.cuerpo.línea4"), listaFrasesDestino[j]));
+						escritorPO
+								.println(String.format(config.getProperty("po.cuerpo.línea4"), listaFrasesDestino[j]));
 					} catch (IndexOutOfBoundsException ioobe) {
 						escritorPO.println(
 								String.format(config.getProperty("po.cuerpo.línea4"), "[*** Sin traducción ***]"));
@@ -326,7 +230,7 @@ public class TraducciónDocBook {
 			}
 
 			if (nodoOrigen instanceof Element) {
-				traduceSubárbol2(escritorPO, (Element) nodoOrigen);
+				traduceSubárbol(escritorPO, (Element) nodoOrigen);
 			}
 		}
 	}
@@ -512,7 +416,7 @@ public class TraducciónDocBook {
 		PrintWriter escritorPO = null;
 
 		try {
-			escritorPO = new PrintWriter("src/test/resources/examples/fichero.po", "UTF-8");
+			escritorPO = new PrintWriter(ficheroPO, "UTF-8");
 
 			/*
 			 * Creación de la cabecera del fichero.
@@ -569,11 +473,8 @@ public class TraducciónDocBook {
 			/*
 			 * Creación de las líneas descriptoras del prefacio y su traducción.
 			 */
-			// this.traduceSubárbol(escritorPO,
-			// libroOrigenDoc.getRootElement().element("preface"));
-			particionador.setDelimPrincipales(new String[] { "<footnote", "</footnote>", "(", ")" });
-			particionador.setCaracDelimSecundarios(".?!");
-			this.traduceSubárbol2(escritorPO, libroOrigenDoc.getRootElement().element("preface"));
+			particionador.setCaracDelimitadores(".?!<()");
+			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("preface"));
 
 			/*
 			 * Creación de las líneas descriptoras de los reconocimientos y su traducción.

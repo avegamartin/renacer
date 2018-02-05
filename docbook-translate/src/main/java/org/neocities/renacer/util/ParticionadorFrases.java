@@ -11,61 +11,30 @@ import java.util.StringTokenizer;
  */
 public class ParticionadorFrases {
 
-	private String[] delimPrincipales = null;
-	private String caracDelimSecundarios = null;
-
 	private final short LONGITUD_MÍNIMA_FRASE = 5;
+	private String caracDelimitadores = null;
 
 	/**
-	 * @return the delimPrincipales
+	 * @return the delimitadores
 	 */
-	public String[] getDelimPrincipales() {
-		return delimPrincipales;
+	public String getCaracDelimitadores() {
+		return caracDelimitadores;
 	}
 
 	/**
-	 * @param delimPrincipales
-	 *            Delimitadores principales a establecer, por pares de apertura y
-	 *            cierre.
+	 * @param caracDelimitadores the delimitadores to set
 	 */
-	public void setDelimPrincipales(String[] delimPrincipales) throws IllegalArgumentException {
-		this.delimPrincipales = delimPrincipales;
-
-		if ((this.delimPrincipales.length % 2) != 0)
-			throw new IllegalArgumentException("Los delimitadores principales han de ser especificados por pares.");
+	public void setCaracDelimitadores(String caracDelimitadores) {
+		this.caracDelimitadores = caracDelimitadores;
 	}
 
 	/**
-	 * @return the caracDelimSecundarios
-	 */
-	public String getCaracDelimSecundarios() {
-		return caracDelimSecundarios;
-	}
-
-	/**
-	 * @param caracDelimSecundarios
-	 *            Cadena de caracteres con aquellos que constituyen el conjunto de
-	 *            los secundarios.
-	 */
-	public void setCaracDelimSecundarios(String caracDelimSecundarios) {
-		this.caracDelimSecundarios = caracDelimSecundarios;
-	}
-
-	/**
-	 * Método para el particionado de una cadena de texto, en sus frases
-	 * componentes, según una jerarquía de delimitadores de dos niveles:
+	 * Método para el particionado de una cadena de texto en sus frases componentes.
 	 * <p>
-	 * <ol>
-	 * <li>Delimitadores principales: vector de cadenas de texto que, cuando se dan
-	 * en la cadena particionándose, delimitan una frase completa, no
-	 * interpretándose los delimitadores secundarios dentro de ellas. Se espera que
-	 * las cadenas delimitadoras vengan especificadas por pares; la cadena de
-	 * apertura seguida de la cadena de cierre.</li>
-	 * <li>Caracteres delimitadores secundarios: conjunto de caracteres que, si
-	 * cualquiera de ellos se da dentro de la cadena particionándose, delimitan una
-	 * frase completa; a menos que dichos caracteres se den dentro de una subcadena
-	 * confinada entre delimitadores principales.</li>
-	 * </ol>
+	 * Si en el conjunto de delimitadores se dan paréntesis, o la apertura de
+	 * etiquetas XML, se estipula que toda la cadena encerrada entre dichos
+	 * delimitadores sea considerada una sola frase, aunque en su interior se dé
+	 * algún otro delimitador.
 	 * 
 	 * @param cadenaOriginal
 	 *            Cadena original que se pretende particionar en sus frases
@@ -74,56 +43,58 @@ public class ParticionadorFrases {
 	 *         incluidos los delimitadores.
 	 */
 	public String[] obténFrases(String cadenaOriginal) {
-		StringBuilder sb = new StringBuilder(cadenaOriginal);
-		StringTokenizer stSecundarios = null;
+		StringTokenizer st = new StringTokenizer(cadenaOriginal, caracDelimitadores, true);
 		LinkedList<String> listaFrases = new LinkedList<String>();
-		int posCurAnálisis = 0; // Posición del cursor de análisis
+		String delimitador = "<nulo>", delimitadorAnterior = "<nulo>";
+		int nivelesDelimXML = 0; // Niveles de delimitadores de etiquetas XML
+		boolean enÁmbitoParéntesis = false, seHaCerradoEtiqueta = false;
 
 		listaFrases.clear();
 
-		while (sb.length() > 0) {
-			int idxDelimPrincipal;
-			for (idxDelimPrincipal = 0; idxDelimPrincipal < delimPrincipales.length - 1; idxDelimPrincipal += 2) {
-				posCurAnálisis = sb.indexOf(delimPrincipales[idxDelimPrincipal]);
-				if (posCurAnálisis != -1)
+		// Descomposición de elementos traducibles en las frases que los componen.
+		while (st.hasMoreTokens()) {
+			String frase = st.nextToken();
+			if (caracDelimitadores.indexOf(frase) == -1) {
+				delimitador = st.hasMoreTokens() ? st.nextToken() : "";
+				frase += delimitador;
+			} else {
+				delimitador = frase; // Dos delimitadores seguidos
+			}
+
+			if (frase.startsWith("/") && delimitadorAnterior.equals("<")) { // Cierre de etiqueta XML
+				nivelesDelimXML--;
+				seHaCerradoEtiqueta = true;
+			} else {
+				seHaCerradoEtiqueta = false;
+			}
+
+			/*
+			 * Aplicación de criterios para decidir si concatenar la frase actual a la
+			 * anterior: 1. Frase demasiado corta. 2. Frase dentro de un par de etiquetas
+			 * XML.
+			 */
+			if ((frase.length() < LONGITUD_MÍNIMA_FRASE || nivelesDelimXML > 0 || enÁmbitoParéntesis
+					|| delimitadorAnterior.equals(")")) && listaFrases.size() > 0) {
+				listaFrases.addLast(listaFrases.removeLast() + frase);
+				if (seHaCerradoEtiqueta)
+					nivelesDelimXML--;
+			} else {
+				listaFrases.addLast(frase);
+			}
+
+			switch (delimitador) {
+				case "<":
+					nivelesDelimXML++;
+					break;
+				case "(":
+					enÁmbitoParéntesis = true;
+					break;
+				case ")":
+					enÁmbitoParéntesis = false;
 					break;
 			}
 
-			if (posCurAnálisis == -1)
-				posCurAnálisis = sb.length(); // Cadena estándar, sin delimintadores principales
-
-			if (posCurAnálisis > 0) {
-				stSecundarios = new StringTokenizer(cadenaOriginal.substring(0, posCurAnálisis), caracDelimSecundarios,
-						true);
-
-				/*
-				 * Particionado de frase estándar
-				 */
-				while (stSecundarios.hasMoreTokens()) {
-					String token = stSecundarios.nextToken() // Incluido token separador
-							+ (stSecundarios.hasMoreTokens() ? stSecundarios.nextToken() : "");
-
-					/*
-					 * Si la frase es demasiado corta para ser considerada por separado; se
-					 * concatena a la anterior.
-					 */
-					if (token.length() < LONGITUD_MÍNIMA_FRASE && listaFrases.size() > 0) {
-						listaFrases.addLast(listaFrases.removeLast() + token);
-					} else {
-						listaFrases.addLast(token);
-					}
-				}
-
-				sb.delete(0, posCurAnálisis);
-			}
-
-			if (idxDelimPrincipal < delimPrincipales.length) { // Se dio un delimitador especial
-				int inicioCierre = sb.indexOf(delimPrincipales[idxDelimPrincipal + 1]); // Segundo miembro del par
-				if (inicioCierre == -1)
-					throw new IndexOutOfBoundsException("La subcadena no está correctamente delimitada: falta cierre.");
-				listaFrases.addLast(sb.substring(0, inicioCierre + delimPrincipales[idxDelimPrincipal + 1].length()));
-				sb.delete(0, inicioCierre + delimPrincipales[idxDelimPrincipal + 1].length());
-			}
+			delimitadorAnterior = delimitador;
 		}
 
 		return listaFrases.toArray(new String[0]);
