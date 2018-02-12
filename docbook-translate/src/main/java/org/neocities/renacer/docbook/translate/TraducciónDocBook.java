@@ -68,13 +68,13 @@ public class TraducciónDocBook {
 	public static void main(String[] args) {
 		TraducciónDocBook traducción = new TraducciónDocBook();
 		try {
-			Document libro = traducción
-					.analizaXMLDocBook(traducción.getClass().getClassLoader().getResourceAsStream(args[0]));
-			System.out.println("Codificación empleada:" + libro.getXMLEncoding());
-
-		} catch (DocumentException e) {
-			System.err.println("Se ha producido una excepción al procesar el fichero:\n" + e);
-			e.printStackTrace();
+			traducción.estableceLibroOrigen(args[0]);
+			traducción.estableceLibroDestino(args[1]);
+			traducción.estableceFicheroPO(args[2]);
+			traducción.generaFicheroPO();
+		} catch (FileNotFoundException | DocumentException e) {
+			BITÁCORA.log(Level.SEVERE, "Abortando el proceso de generación del fichero PO...");
+			System.exit(1);
 		}
 	}
 
@@ -84,8 +84,10 @@ public class TraducciónDocBook {
 	 * 
 	 * @param rutaLibroOrigen
 	 *            Ruta donde está ubicado el libro de origen.
+	 * @throws FileNotFoundException
+	 * @throws DocumentException
 	 */
-	public void estableceLibroOrigen(String rutaLibroOrigen) {
+	public void estableceLibroOrigen(String rutaLibroOrigen) throws FileNotFoundException, DocumentException {
 		libroOrigenFichero = new File(rutaLibroOrigen);
 
 		try {
@@ -93,9 +95,11 @@ public class TraducciónDocBook {
 		} catch (FileNotFoundException fnfe) {
 			BITÁCORA.log(Level.SEVERE, "Fichero de libro en el idioma de origen no encontrado: ", fnfe);
 			fnfe.printStackTrace();
+			throw fnfe;
 		} catch (DocumentException de) {
 			BITÁCORA.log(Level.SEVERE, "Error al efectuar en análisis XML del libro en el idioma de origen: ", de);
 			de.printStackTrace();
+			throw de;
 		}
 	}
 
@@ -105,8 +109,10 @@ public class TraducciónDocBook {
 	 * 
 	 * @param rutaLibroDestino
 	 *            Ruta donde está ubicado el libro de destino.
+	 * @throws FileNotFoundException
+	 * @throws DocumentException
 	 */
-	public void estableceLibroDestino(String rutaLibroDestino) {
+	public void estableceLibroDestino(String rutaLibroDestino) throws FileNotFoundException, DocumentException {
 		libroDestinoFichero = new File(rutaLibroDestino);
 
 		try {
@@ -114,15 +120,17 @@ public class TraducciónDocBook {
 		} catch (FileNotFoundException fnfe) {
 			BITÁCORA.log(Level.SEVERE, "Fichero de libro en el idioma de destino no encontrado: ", fnfe);
 			fnfe.printStackTrace();
+			throw fnfe;
 		} catch (DocumentException de) {
 			BITÁCORA.log(Level.SEVERE, "Error al efectuar en análisis XML del libro en el idioma de destino: ", de);
 			de.printStackTrace();
+			throw de;
 		}
 	}
 
 	/**
-	 * Establecimiento del fichero PO, de enfrentamiento de la traducción de origen
-	 * a la de destino.
+	 * Establecimiento del fichero PO, de traducción del idioma de origen al de
+	 * destino.
 	 * 
 	 * @param rutaFicheroPO
 	 *            Ruta donde será ubicado el fichero PO.
@@ -179,9 +187,9 @@ public class TraducciónDocBook {
 		for (int i = 0, númNodos = elementoRaízSubárbol.nodeCount(); i < númNodos; i++) {
 			nodoOrigen = elementoRaízSubárbol.node(i);
 
-			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE
-					&& (nodoOrigen.getName().equals("title") || nodoOrigen.getName().equals("para"))) { // Requiere
-																										// traducción
+			// Comprobación de nodos que requieren traducción.
+			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE && (nodoOrigen.getName().endsWith("title")
+					|| nodoOrigen.getName().equals("para") || nodoOrigen.getName().equals("author"))) {
 				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
 				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"),
 						expresaRutaComoNodos(xPathSinNS(nodoOrigen.getPath()))));
@@ -191,17 +199,25 @@ public class TraducciónDocBook {
 				nodoDestino = libroDestinoDoc.selectSingleNode(nodoOrigen.getUniquePath());
 
 				String textoNodoOrigen = compactaCadenaXML(nodoOrigen.asXML());
-				textoNodoOrigen = textoNodoOrigen
-						.substring(textoNodoOrigen.indexOf(">") + 1, textoNodoOrigen.lastIndexOf("<")).trim();
+				if (!textoNodoOrigen.endsWith("/>")) {
+					textoNodoOrigen = textoNodoOrigen
+							.substring(textoNodoOrigen.indexOf(">") + 1, textoNodoOrigen.lastIndexOf("<")).trim();
+				} else {
+					textoNodoOrigen = "[*** Nulo ***]";
+				}
 
 				String textoNodoDestino = null;
 				if (nodoDestino != null) {
 					textoNodoDestino = compactaCadenaXML(nodoDestino.asXML());
-					textoNodoDestino = textoNodoDestino
-							.substring(textoNodoDestino.indexOf(">") + 1, textoNodoDestino.lastIndexOf("<")).trim();
+					if (!textoNodoDestino.endsWith("/>")) {
+						textoNodoDestino = textoNodoDestino
+								.substring(textoNodoDestino.indexOf(">") + 1, textoNodoDestino.lastIndexOf("<"))
+								.trim();
+					} else {
+						textoNodoDestino = "[*** Nulo ***]";
+					}
 				} else {
-					escritorPO.println("[*** Sin traducción ***]");
-					continue;
+					textoNodoDestino = "[*** Sin traducción ***]";
 				}
 
 				String[] listaFrasesOrigen = particionador.obténFrases(textoNodoOrigen),
@@ -272,7 +288,8 @@ public class TraducciónDocBook {
 	 *         como argumento.
 	 */
 	private String obténTextoContenidoNodo(Document libro, String xPathElemento) {
-		return libro.selectSingleNode(xPathConNS(xPathElemento)).getText();
+		Node nodo = libro.selectSingleNode(xPathConNS(xPathElemento));
+		return nodo != null ? nodo.getText() : "<nulo>";
 	}
 
 	/**
@@ -416,6 +433,7 @@ public class TraducciónDocBook {
 		PrintWriter escritorPO = null;
 
 		try {
+			particionador.setCaracDelimitadores(".?!<()");
 			escritorPO = new PrintWriter(ficheroPO, "UTF-8");
 
 			/*
@@ -432,54 +450,28 @@ public class TraducciónDocBook {
 				escritorPO.println(config.getProperty("po.cabecera.línea" + i));
 
 			/*
-			 * Creación de las líneas descriptoras del título y su traducción.
+			 * Creación de las líneas descriptoras de la información acerca del libro:
+			 * título, subtítulo y autor, si constan, y su traducción.
 			 */
-			escritorPO.println(config.getProperty("po.cuerpo.línea0"));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><title>"));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"), libroOrigenFichero.getName(),
-					this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/title")));
-			escritorPO.println(
-					String.format(config.getProperty("po.cuerpo.línea3"), this.obténTítuloLibro(libroOrigenDoc)));
-			escritorPO.println(
-					String.format(config.getProperty("po.cuerpo.línea4"), this.obténTítuloLibro(libroDestinoDoc)));
-
-			/*
-			 * Creación de las líneas descriptoras del subtítulo y su traducción.
-			 */
-			escritorPO.println(config.getProperty("po.cuerpo.línea0"));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><subtitle>"));
-			escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"), libroOrigenFichero.getName(),
-					this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/subtitle")));
-			escritorPO.println(
-					String.format(config.getProperty("po.cuerpo.línea3"), this.obténSubtítuloLibro(libroOrigenDoc)));
-			escritorPO.println(
-					String.format(config.getProperty("po.cuerpo.línea4"), this.obténSubtítuloLibro(libroDestinoDoc)));
-
-			/*
-			 * Creación de las líneas descriptoras del autor y su traducción, si están
-			 * especificados.
-			 */
-			if (libroOrigenDoc.selectSingleNode(xPathConNS("/book/info/author")) != null) {
-				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"), "<book><info><author>"));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea2"), libroOrigenFichero.getName(),
-						this.obténLíneaElementoLibro(libroOrigenDoc, "/book/info/author")));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea3"),
-						this.obténXMLContenidoNodo(libroOrigenDoc, "/book/info/author")));
-				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea4"),
-						this.obténXMLContenidoNodo(libroDestinoDoc, "/book/info/author")));
+			if (libroOrigenDoc.selectSingleNode(xPathConNS("/book/info")) != null) {
+				this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("info"));
 			}
 
 			/*
-			 * Creación de las líneas descriptoras del prefacio y su traducción.
+			 * Creación de las líneas descriptoras del prefacio y su traducción, si están
+			 * especificados.
 			 */
-			particionador.setCaracDelimitadores(".?!<()");
-			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("preface"));
+			if (libroOrigenDoc.selectSingleNode(xPathConNS("/book/preface")) != null) {
+				this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("preface"));
+			}
 
 			/*
-			 * Creación de las líneas descriptoras de los reconocimientos y su traducción.
+			 * Creación de las líneas descriptoras de los reconocimientos y su traducción,
+			 * si están especificados.
 			 */
-			this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("acknowledgements"));
+			if (libroOrigenDoc.selectSingleNode(xPathConNS("/book/acknowledgements")) != null) {
+				this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("acknowledgements"));
+			}
 
 			/*
 			 * Creación de las líneas descriptoras de los capítulos y su traducción.
@@ -487,8 +479,6 @@ public class TraducciónDocBook {
 			for (Element capítulo : libroOrigenDoc.getRootElement().elements("chapter")) {
 				this.traduceSubárbol(escritorPO, capítulo);
 			}
-
-			escritorPO.close();
 
 		} catch (FileNotFoundException fnfe) {
 			BITÁCORA.log(Level.SEVERE, "Error al intentar escribir en el fichero PO: ", fnfe);
@@ -500,6 +490,8 @@ public class TraducciónDocBook {
 		} catch (NoSuchAlgorithmException nsae) {
 			BITÁCORA.log(Level.SEVERE, "Error de generación de códigos MD5 para procesado de documentos: ", nsae);
 			nsae.printStackTrace();
+		} finally {
+			escritorPO.close();
 		}
 	}
 }
