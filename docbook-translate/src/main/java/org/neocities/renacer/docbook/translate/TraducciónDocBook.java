@@ -44,6 +44,8 @@ public class TraducciónDocBook {
 	private static Properties config = new Properties();
 	private HashMap<String, MutableInteger> mapaCadenas = new HashMap<String, MutableInteger>();
 	private ParticionadorFrases particionador = new ParticionadorFrases();
+	private final static String TEXTO_NODO_NULO = "[*** Nulo ***]",
+			TEXTO_NODO_SIN_TRADUCCIÓN = "[*** Sin traducción ***]";
 	private final static Logger BITÁCORA = Logger.getLogger(TraducciónDocBook.class.getName());
 
 	/**
@@ -188,8 +190,9 @@ public class TraducciónDocBook {
 			nodoOrigen = elementoRaízSubárbol.node(i);
 
 			// Comprobación de nodos que requieren traducción.
-			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE && (nodoOrigen.getName().endsWith("title")
-					|| nodoOrigen.getName().equals("para") || nodoOrigen.getName().equals("author"))) {
+			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE
+					&& (nodoOrigen.getName().equals("para") || nodoOrigen.getName().endsWith("title")
+							|| nodoOrigen.getName().equals("author") || nodoOrigen.getName().equals("biblioentry"))) {
 				escritorPO.println(config.getProperty("po.cuerpo.línea0"));
 				escritorPO.println(String.format(config.getProperty("po.cuerpo.línea1"),
 						expresaRutaComoNodos(xPathSinNS(nodoOrigen.getPath()))));
@@ -203,7 +206,7 @@ public class TraducciónDocBook {
 					textoNodoOrigen = textoNodoOrigen
 							.substring(textoNodoOrigen.indexOf(">") + 1, textoNodoOrigen.lastIndexOf("<")).trim();
 				} else {
-					textoNodoOrigen = "[*** Nulo ***]";
+					textoNodoOrigen = TEXTO_NODO_NULO;
 				}
 
 				String textoNodoDestino = null;
@@ -211,13 +214,12 @@ public class TraducciónDocBook {
 					textoNodoDestino = compactaCadenaXML(nodoDestino.asXML());
 					if (!textoNodoDestino.endsWith("/>")) {
 						textoNodoDestino = textoNodoDestino
-								.substring(textoNodoDestino.indexOf(">") + 1, textoNodoDestino.lastIndexOf("<"))
-								.trim();
+								.substring(textoNodoDestino.indexOf(">") + 1, textoNodoDestino.lastIndexOf("<")).trim();
 					} else {
-						textoNodoDestino = "[*** Nulo ***]";
+						textoNodoDestino = TEXTO_NODO_NULO;
 					}
 				} else {
-					textoNodoDestino = "[*** Sin traducción ***]";
+					textoNodoDestino = TEXTO_NODO_SIN_TRADUCCIÓN;
 				}
 
 				String[] listaFrasesOrigen = particionador.obténFrases(textoNodoOrigen),
@@ -238,7 +240,7 @@ public class TraducciónDocBook {
 								.println(String.format(config.getProperty("po.cuerpo.línea4"), listaFrasesDestino[j]));
 					} catch (IndexOutOfBoundsException ioobe) {
 						escritorPO.println(
-								String.format(config.getProperty("po.cuerpo.línea4"), "[*** Sin traducción ***]"));
+								String.format(config.getProperty("po.cuerpo.línea4"), TEXTO_NODO_SIN_TRADUCCIÓN));
 					}
 				}
 
@@ -259,7 +261,6 @@ public class TraducciónDocBook {
 	 * @return Título del libro que se pasa como argumento.
 	 */
 	public String obténTítuloLibro(Document libro) {
-		// Node nodo = libro.getRootElement().element("info").element("title");
 		return this.obténTextoContenidoNodo(libro, "/book/info/title");
 	}
 
@@ -450,34 +451,11 @@ public class TraducciónDocBook {
 				escritorPO.println(config.getProperty("po.cabecera.línea" + i));
 
 			/*
-			 * Creación de las líneas descriptoras de la información acerca del libro:
-			 * título, subtítulo y autor, si constan, y su traducción.
+			 * Creación de las líneas descriptoras de los contenidos de libro y su
+			 * traducción.
 			 */
-			if (libroOrigenDoc.selectSingleNode(xPathConNS("/book/info")) != null) {
-				this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("info"));
-			}
-
-			/*
-			 * Creación de las líneas descriptoras del prefacio y su traducción, si están
-			 * especificados.
-			 */
-			if (libroOrigenDoc.selectSingleNode(xPathConNS("/book/preface")) != null) {
-				this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("preface"));
-			}
-
-			/*
-			 * Creación de las líneas descriptoras de los reconocimientos y su traducción,
-			 * si están especificados.
-			 */
-			if (libroOrigenDoc.selectSingleNode(xPathConNS("/book/acknowledgements")) != null) {
-				this.traduceSubárbol(escritorPO, libroOrigenDoc.getRootElement().element("acknowledgements"));
-			}
-
-			/*
-			 * Creación de las líneas descriptoras de los capítulos y su traducción.
-			 */
-			for (Element capítulo : libroOrigenDoc.getRootElement().elements("chapter")) {
-				this.traduceSubárbol(escritorPO, capítulo);
+			for (Element nodoPrimerNivel : libroOrigenDoc.getRootElement().elements()) {
+				this.traduceSubárbol(escritorPO, nodoPrimerNivel);
 			}
 
 		} catch (FileNotFoundException fnfe) {
