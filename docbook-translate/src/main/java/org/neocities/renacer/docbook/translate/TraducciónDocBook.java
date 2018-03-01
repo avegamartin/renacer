@@ -11,16 +11,18 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.AbstractSequentialList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -65,17 +67,51 @@ public class TraducciónDocBook {
 	/**
 	 * @param args
 	 *            Lista de ficheros XML, contenedores de libros, a analizar: idioma
-	 *            de origen y de destino.
+	 *            de origen y de destino; fichero de traducción; solicitud de
+	 *            mostrado de estructuras.
 	 */
 	public static void main(String[] args) {
 		TraducciónDocBook traducción = new TraducciónDocBook();
+		CommandLineParser analizadorLC = new DefaultParser();
+
+		/*
+		 * Establecimiento de opciones de la línea de comandos.
+		 */
+		Options opciones = new Options();
+		opciones.addRequiredOption("o", "original", true, "Fichero XML con el documento en el idioma original.");
+		opciones.addRequiredOption("t", "traducido", true, "Fichero XML con el documento en el idioma traducido.");
+		opciones.addOption("p", "po", true, "Fichero de traducción PO.");
+		opciones.addOption("e", "estructura", false,
+				"Muestra la estructura de nodos traducibles de los ficheros de documento.");
+		opciones.addOption("n", "numera", false, "Muestra los números de línea donde aparecen los nodos");
+
+		/*
+		 * Procesamiento y uso de las opciones de la línea de comandos.
+		 */
 		try {
-			traducción.estableceLibroOrigen(args[0]);
-			traducción.estableceLibroDestino(args[1]);
-			traducción.estableceFicheroPO(args[2]);
-			traducción.generaFicheroPO();
+			CommandLine lc = analizadorLC.parse(opciones, args);
+
+			if (!(lc.hasOption("po") || lc.hasOption("estructura")))
+				throw new ParseException("Es necesario especificar al menos una de las opciones -p o -e");
+
+			traducción.estableceLibroOrigen(lc.getOptionValue("original"));
+			traducción.estableceLibroDestino(lc.getOptionValue("traducido"));
+
+			if (lc.hasOption("po")) {
+				traducción.estableceFicheroPO(lc.getOptionValue("po"));
+				traducción.generaFicheroPO();
+			}
+
+			if (lc.hasOption("estructura"))
+				traducción.generaFicherosEstructura(lc.hasOption("numera"));
+
 		} catch (FileNotFoundException | DocumentException e) {
 			BITÁCORA.log(Level.SEVERE, "Abortando el proceso de generación del fichero PO...");
+			System.exit(1);
+		} catch (ParseException pe) {
+			BITÁCORA.log(Level.SEVERE, "Parámetros de invocación incorrectos: ", pe);
+			HelpFormatter formateadorLC = new HelpFormatter();
+			formateadorLC.printHelp("TraducciónDocBook", opciones);
 			System.exit(1);
 		}
 	}
@@ -183,12 +219,10 @@ public class TraducciónDocBook {
 	 * @throws NoSuchAlgorithmException
 	 */
 	public void traduceSubárbol(PrintWriter escritorPO, Element elementoRaízSubárbol) throws NoSuchAlgorithmException {
-		Node nodoOrigen = null, nodoDestino = null;
+		Node nodoDestino = null;
 
 		// Navegación por las ramas del subárbol.
-		for (int i = 0, númNodos = elementoRaízSubárbol.nodeCount(); i < númNodos; i++) {
-			nodoOrigen = elementoRaízSubárbol.node(i);
-
+		for (Node nodoOrigen : elementoRaízSubárbol.content()) {
 			// Comprobación de nodos que requieren traducción.
 			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE
 					&& (nodoOrigen.getName().equals("para") || nodoOrigen.getName().endsWith("title")
@@ -249,6 +283,38 @@ public class TraducciónDocBook {
 
 			if (nodoOrigen instanceof Element) {
 				traduceSubárbol(escritorPO, (Element) nodoOrigen);
+			}
+		}
+	}
+
+	/**
+	 * Análisis de ficheros XML contenedores de libros esquematizados según el
+	 * estándar DocBook; y generación de una representación de la estructura de
+	 * nodos que se dan en los mismos, en ficheros con el mismo nombre que los
+	 * originales, pero con extensión "txt".
+	 * 
+	 * @param escritorFE
+	 *            Escritor del fichero donde escribir la estructura de nodos.
+	 * @param elementoRaízSubárbol
+	 *            Nodo elemento raíz del subárbol.
+	 * @param numera
+	 *            ¿Se quiere mostrar los números de línea donde aparecen los nodos?
+	 * @throws NoSuchAlgorithmException
+	 */
+	public void muestraEstructuraSubárbol(PrintWriter escritorFE, Element elementoRaízSubárbol, boolean numera) {
+		// Navegación por las ramas del subárbol.
+		for (Node nodoOrigen : elementoRaízSubárbol.content()) {
+			// Comprobación de nodos que requieren traducción.
+			if (nodoOrigen.getNodeType() == Node.ELEMENT_NODE
+					&& (nodoOrigen.getName().equals("para") || nodoOrigen.getName().endsWith("title")
+							|| nodoOrigen.getName().equals("author") || nodoOrigen.getName().equals("biblioentry"))) {
+				escritorFE.println(expresaRutaComoNodos(xPathSinNS(nodoOrigen.getPath()))
+						+ (numera ? ":" + ((NumberedSAXReader.LocationAwareElement) nodoOrigen).getLineNumber() : ""));
+				continue; // No escaneamos sub-nodos de los nodos traducibles.
+			}
+
+			if (nodoOrigen instanceof Element) {
+				muestraEstructuraSubárbol(escritorFE, (Element) nodoOrigen, numera);
 			}
 		}
 	}
@@ -470,6 +536,36 @@ public class TraducciónDocBook {
 			nsae.printStackTrace();
 		} finally {
 			escritorPO.close();
+		}
+	}
+
+	/**
+	 * Generación del los ficheros descriptores de estructura de los de traducción.
+	 *
+	 * @param numera
+	 *            ¿Se quiere mostrar los números de línea donde aparecen los nodos?
+	 */
+	public void generaFicherosEstructura(boolean numera) {
+		PrintWriter escritorEstructura = null;
+
+		try {
+			escritorEstructura = new PrintWriter(libroOrigenFichero.getCanonicalPath().split("\\.")[0] + ".txt",
+					"UTF-8");
+			for (Element nodoPrimerNivel : libroOrigenDoc.getRootElement().elements()) {
+				this.muestraEstructuraSubárbol(escritorEstructura, nodoPrimerNivel, numera);
+			}
+			escritorEstructura.close();
+
+			escritorEstructura = new PrintWriter(libroDestinoFichero.getCanonicalPath().split("\\.")[0] + ".txt",
+					"UTF-8");
+			for (Element nodoPrimerNivel : libroDestinoDoc.getRootElement().elements()) {
+				this.muestraEstructuraSubárbol(escritorEstructura, nodoPrimerNivel, numera);
+			}
+		} catch (IOException ioe) {
+			BITÁCORA.log(Level.SEVERE, "Error de lectura/escritura al intentar abrir el fichero de estructura: ", ioe);
+			ioe.printStackTrace();
+		} finally {
+			escritorEstructura.close();
 		}
 	}
 }
