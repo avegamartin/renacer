@@ -15,14 +15,15 @@ public class ParticionadorFrases {
 	private String caracDelimitadores = null;
 
 	/**
-	 * @return the delimitadores
+	 * @return Conjunto de caracteres que consideramos delimitan frases.
 	 */
 	public String getCaracDelimitadores() {
 		return caracDelimitadores;
 	}
 
 	/**
-	 * @param caracDelimitadores the delimitadores to set
+	 * @param caracDelimitadores
+	 *            Conjunto de caracteres que consideramos delimitan frases.
 	 */
 	public void setCaracDelimitadores(String caracDelimitadores) {
 		this.caracDelimitadores = caracDelimitadores;
@@ -70,11 +71,13 @@ public class ParticionadorFrases {
 
 			/*
 			 * Aplicación de criterios para decidir si concatenar la frase actual a la
-			 * anterior: 1. Frase demasiado corta. 2. Frase dentro de un par de etiquetas
-			 * XML.
+			 * anterior: 1. Frase dentro de un par de etiquetas XML; 2. frase entre
+			 * paréntesis; 3. frase actual demasiado corta; 4. frase anterior demasiado
+			 * corta.
 			 */
-			if ((frase.length() < LONGITUD_MÍNIMA_FRASE || nivelesDelimXML > 0 || enÁmbitoParéntesis
-					|| delimitadorAnterior.equals(")")) && listaFrases.size() > 0) {
+			if (listaFrases.size() > 0 && (nivelesDelimXML > 0 || enÁmbitoParéntesis || delimitadorAnterior.equals(")")
+					|| frase.length() < LONGITUD_MÍNIMA_FRASE
+					|| listaFrases.getLast().length() < LONGITUD_MÍNIMA_FRASE)) {
 				listaFrases.addLast(listaFrases.removeLast() + frase);
 				if (seHaCerradoEtiqueta)
 					nivelesDelimXML--;
