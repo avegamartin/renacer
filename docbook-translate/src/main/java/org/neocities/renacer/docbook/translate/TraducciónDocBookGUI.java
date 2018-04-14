@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.neocities.renacer.docbook.translate.model.TraducciónDocBook;
 import org.neocities.renacer.docbook.translate.view.LienzoGeneralControlador;
 
 import javafx.application.Application;

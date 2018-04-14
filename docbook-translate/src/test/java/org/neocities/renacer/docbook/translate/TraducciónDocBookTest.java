@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.logging.Level;
 
 import org.dom4j.DocumentException;
+import org.neocities.renacer.docbook.translate.model.TraducciónDocBook;
 
 import junit.framework.TestCase;
 
@@ -23,16 +24,16 @@ public class TraducciónDocBookTest extends TestCase {
 
 	/**
 	 * Test method for
-	 * {@link org.neocities.renacer.docbook.translate.TraducciónDocBook#analizaXMLDocBook(java.net.URL)}.
+	 * {@link org.neocities.renacer.docbook.translate.model.TraducciónDocBook#analizaXMLDocBook(java.net.URL)}.
 	 */
 	public void testAnalizaXMLDocBook() {
 		TraducciónDocBook traducción = new TraducciónDocBook();
 		try {
-			traducción.estableceLibroOrigen("src/test/resources/examples/book-en-2_GB.xml");
-			traducción.estableceLibroDestino("src/test/resources/examples/book-es-2_ES.xml");
+			traducción.estableceLibroOrigen("src/test/resources/examples/book-en_GB.xml");
+			traducción.estableceLibroDestino("src/test/resources/examples/book-es_ES.xml");
 			traducción.estableceFicheroPO("src/test/resources/examples/fichero.po");
 			assertEquals(traducción.getLibroOrigenDoc().getXMLEncoding(), "UTF-8");
-			assertEquals("Leadership in Theological Education Volume 1", traducción.obténTítuloLibro(traducción.getLibroOrigenDoc()));
+			assertEquals("Excellence in Theological Educational", traducción.obténTítuloLibro(traducción.getLibroOrigenDoc()));
 			traducción.generaFicheroPO();
 		} catch (FileNotFoundException | DocumentException e) {
 			System.err.println("Abortando el proceso de generación del fichero PO...");

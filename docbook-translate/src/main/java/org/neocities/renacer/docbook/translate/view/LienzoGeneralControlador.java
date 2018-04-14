@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
-import org.neocities.renacer.docbook.translate.TraducciónDocBook;
+import org.neocities.renacer.docbook.translate.model.TraducciónDocBook;
 import org.neocities.renacer.docbook.translate.TraducciónDocBookGUI;
 
 import javafx.event.EventHandler;

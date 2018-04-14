@@ -1,13 +1,16 @@
-package org.neocities.renacer.docbook.translate;
+package org.neocities.renacer.docbook.translate.model;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,12 +18,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -43,6 +40,7 @@ public class TraducciónDocBook {
 	private File libroOrigenFichero = null, libroDestinoFichero = null, ficheroPO = null;
 	private Document libroOrigenDoc = null, libroDestinoDoc = null;
 	private static Properties config = new Properties();
+	private ByteArrayOutputStream baosPO = null;
 	private HashMap<String, MutableInteger> mapaCadenas = new HashMap<String, MutableInteger>();
 	private ParticionadorFrases particionador = new ParticionadorFrases();
 	private final static String TEXTO_NODO_NULO = "[*** Nulo ***]",
@@ -60,58 +58,6 @@ public class TraducciónDocBook {
 		} catch (IOException ioe) {
 			BITÁCORA.log(Level.SEVERE, "Imposible cargar la parametrización inicial: ", ioe);
 			ioe.printStackTrace();
-		}
-	}
-
-	/**
-	 * @param args
-	 *            Lista de ficheros XML, contenedores de libros, a analizar: idioma
-	 *            de origen y de destino; fichero de traducción; solicitud de
-	 *            mostrado de estructuras.
-	 */
-	public static void main(String[] args) {
-		TraducciónDocBook traducción = new TraducciónDocBook();
-		CommandLineParser analizadorLC = new DefaultParser();
-
-		/*
-		 * Establecimiento de opciones de la línea de comandos.
-		 */
-		Options opciones = new Options();
-		opciones.addRequiredOption("o", "original", true, "Fichero XML con el documento en el idioma original.");
-		opciones.addRequiredOption("t", "traducido", true, "Fichero XML con el documento en el idioma traducido.");
-		opciones.addOption("p", "po", true, "Fichero de traducción PO.");
-		opciones.addOption("e", "estructura", false,
-				"Muestra la estructura de nodos traducibles de los ficheros de documento.");
-		opciones.addOption("n", "numera", false, "Muestra los números de línea donde aparecen los nodos");
-
-		/*
-		 * Procesamiento y uso de las opciones de la línea de comandos.
-		 */
-		try {
-			CommandLine lc = analizadorLC.parse(opciones, args);
-
-			if (!(lc.hasOption("po") || lc.hasOption("estructura")))
-				throw new ParseException("Es necesario especificar al menos una de las opciones -p o -e");
-
-			traducción.estableceLibroOrigen(lc.getOptionValue("original"));
-			traducción.estableceLibroDestino(lc.getOptionValue("traducido"));
-
-			if (lc.hasOption("po")) {
-				traducción.estableceFicheroPO(lc.getOptionValue("po"));
-				traducción.generaFicheroPO();
-			}
-
-			if (lc.hasOption("estructura"))
-				traducción.generaFicherosEstructura(lc.hasOption("numera"));
-
-		} catch (FileNotFoundException | DocumentException e) {
-			BITÁCORA.log(Level.SEVERE, "Abortando el proceso de generación del fichero PO...");
-			System.exit(1);
-		} catch (ParseException pe) {
-			BITÁCORA.log(Level.SEVERE, "Parámetros de invocación incorrectos: ", pe);
-			HelpFormatter formateadorLC = new HelpFormatter();
-			formateadorLC.printHelp("TraducciónDocBook", opciones);
-			System.exit(1);
 		}
 	}
 
@@ -358,17 +304,18 @@ public class TraducciónDocBook {
 		}
 		return mi.inc();
 	}
-
+	
 	/**
-	 * Generación del fichero de traducción PO.
+	 * Generación de la traducción PO.
 	 */
-	public void generaFicheroPO() {
+	public void generaPO() {
 		PrintWriter escritorPO = null;
-
+		
 		try {
+			baosPO = new ByteArrayOutputStream((int) (libroOrigenFichero.length() * 2));
+			escritorPO = new PrintWriter(new BufferedOutputStream(baosPO));
 			particionador.setCaracDelimitadores(".?!<()");
-			escritorPO = new PrintWriter(ficheroPO, "UTF-8");
-
+			
 			/*
 			 * Creación de la cabecera del fichero.
 			 */
@@ -381,7 +328,7 @@ public class TraducciónDocBook {
 			escritorPO.println(String.format(config.getProperty("po.cabecera.línea10"), new Date()));
 			for (int i = 11; i <= 17; i++)
 				escritorPO.println(config.getProperty("po.cabecera.línea" + i));
-
+			
 			/*
 			 * Creación de las líneas descriptoras de los contenidos de libro y su
 			 * traducción.
@@ -389,19 +336,25 @@ public class TraducciónDocBook {
 			for (Element nodoPrimerNivel : libroOrigenDoc.getRootElement().elements()) {
 				this.traduceSubárbol(escritorPO, nodoPrimerNivel);
 			}
-
-		} catch (FileNotFoundException fnfe) {
-			BITÁCORA.log(Level.SEVERE, "Error al intentar escribir en el fichero PO: ", fnfe);
-			fnfe.printStackTrace();
-		} catch (UnsupportedEncodingException uee) {
-			BITÁCORA.log(Level.SEVERE,
-					"La codificación de caracteres, especificada para el fichero PO, no está soportada: ", uee);
-			uee.printStackTrace();
+			
 		} catch (NoSuchAlgorithmException nsae) {
 			BITÁCORA.log(Level.SEVERE, "Error de generación de códigos MD5 para procesado de documentos: ", nsae);
 			nsae.printStackTrace();
 		} finally {
 			escritorPO.close();
+		}
+	}
+	
+	/**
+	 * Generación del fichero de traducción PO.
+	 */
+	public void generaFicheroPO() {
+		try (OutputStream os = new FileOutputStream(ficheroPO)) {
+			if (baosPO == null) generaPO();
+			baosPO.writeTo(os);
+			os.close();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
 		}
 	}
 
