@@ -1,0 +1,7 @@
+.tree-cell.nodoOK {
+	-fx-text-fill: black;
+}
+
+.tree-cell.nodoKO {
+	-fx-text-fill: red;
+}

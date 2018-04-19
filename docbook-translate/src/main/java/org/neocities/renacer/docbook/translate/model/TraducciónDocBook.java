@@ -26,6 +26,7 @@ import org.dom4j.io.SAXReader;
 import org.neocities.renacer.util.GestiónDOM;
 import org.neocities.renacer.util.MutableInteger;
 import org.neocities.renacer.util.NumberedSAXReader;
+import org.neocities.renacer.util.NumberedSAXReader.LocationAwareElement;
 import org.neocities.renacer.util.ParticionadorFrases;
 
 /**
@@ -208,8 +209,11 @@ public class TraducciónDocBook {
 					} else {
 						textoNodoDestino = TEXTO_NODO_NULO;
 					}
+					((NumberedSAXReader.LocationAwareElement) nodoOrigen)
+							.setRelatedNode((LocationAwareElement) nodoDestino);
 				} else {
 					textoNodoDestino = TEXTO_NODO_SIN_TRADUCCIÓN;
+					((NumberedSAXReader.LocationAwareElement) nodoOrigen).setNodeWithErrors(true);
 				}
 
 				String[] listaFrasesOrigen = particionador.obténFrases(textoNodoOrigen),
@@ -231,6 +235,7 @@ public class TraducciónDocBook {
 					} catch (IndexOutOfBoundsException ioobe) {
 						escritorPO.println(
 								String.format(config.getProperty("po.cuerpo.línea4"), TEXTO_NODO_SIN_TRADUCCIÓN));
+						((NumberedSAXReader.LocationAwareElement) nodoOrigen).setNodeWithErrors(true);
 					}
 				}
 
@@ -297,16 +302,17 @@ public class TraducciónDocBook {
 	public String obténSubtítuloLibro(Document libro) {
 		return GestiónDOM.obténTextoContenidoNodo(libro, "/book/info/subtitle");
 	}
-	
+
 	/**
-	 * Obtención del contenido de la traducción PO, en forma de cadena de caracteres.
+	 * Obtención del contenido de la traducción PO, en forma de cadena de
+	 * caracteres.
 	 * 
-	 * @return	Cadena de caracteres de la traducción PO actual.
+	 * @return Cadena de caracteres de la traducción PO actual.
 	 */
 	public String obténContenidoPO() {
 		return baosPO != null ? baosPO.toString() : "<Aún no establecido>";
 	}
-	
+
 	/**
 	 * Obtención del número de repeticiones con las que aparece una cadena dada,
 	 * dentro de un mapa de cadenas mantenida por la clase.
@@ -324,18 +330,18 @@ public class TraducciónDocBook {
 		}
 		return mi.inc();
 	}
-	
+
 	/**
 	 * Generación de la traducción PO.
 	 */
 	public void generaPO() {
 		PrintWriter escritorPO = null;
-		
+
 		try {
 			baosPO = new ByteArrayOutputStream((int) (libroOrigenFichero.length() * 2));
 			escritorPO = new PrintWriter(new BufferedOutputStream(baosPO));
 			particionador.setCaracDelimitadores(".?!<()");
-			
+
 			/*
 			 * Creación de la cabecera del fichero.
 			 */
@@ -348,7 +354,7 @@ public class TraducciónDocBook {
 			escritorPO.println(String.format(config.getProperty("po.cabecera.línea10"), new Date()));
 			for (int i = 11; i <= 17; i++)
 				escritorPO.println(config.getProperty("po.cabecera.línea" + i));
-			
+
 			/*
 			 * Creación de las líneas descriptoras de los contenidos de libro y su
 			 * traducción.
@@ -356,7 +362,7 @@ public class TraducciónDocBook {
 			for (Element nodoPrimerNivel : libroOrigenDoc.getRootElement().elements()) {
 				this.traduceSubárbol(escritorPO, nodoPrimerNivel);
 			}
-			
+
 		} catch (NoSuchAlgorithmException nsae) {
 			BITÁCORA.log(Level.SEVERE, "Error de generación de códigos MD5 para procesado de documentos: ", nsae);
 			nsae.printStackTrace();
@@ -364,13 +370,14 @@ public class TraducciónDocBook {
 			escritorPO.close();
 		}
 	}
-	
+
 	/**
 	 * Generación del fichero de traducción PO.
 	 */
 	public void generaFicheroPO() {
 		try (OutputStream os = new FileOutputStream(ficheroPO)) {
-			if (baosPO == null) generaPO();
+			if (baosPO == null)
+				generaPO();
 			baosPO.writeTo(os);
 			os.close();
 		} catch (IOException ioe) {

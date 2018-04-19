@@ -14,6 +14,8 @@ import org.dom4j.tree.DefaultElement;
 import org.xml.sax.Locator;
 import org.xml.sax.XMLReader;
 
+import javafx.scene.control.TreeItem;
+
 /**
  * SAXReader extendido con información de localización de nodos por número de
  * línea en el fichero XML.
@@ -105,6 +107,9 @@ public class NumberedSAXReader extends SAXReader {
 	public static class LocationAwareElement extends DefaultElement {
 
 		private int lineNumber = -1;
+		private boolean nodeWithErrors = false;
+		private LocationAwareElement relatedNode = null;
+		private TreeItem<LocationAwareElement> visualNode = null;
 
 		public LocationAwareElement(QName qname) {
 			super(qname);
@@ -122,12 +127,67 @@ public class NumberedSAXReader extends SAXReader {
 			super(name);
 		}
 
+		/**
+		 * @return the lineNumber
+		 */
 		public int getLineNumber() {
 			return lineNumber;
 		}
 
+		/**
+		 * @param lineNumber the lineNumber to set
+		 */
 		public void setLineNumber(int lineNumber) {
 			this.lineNumber = lineNumber;
+		}
+
+		/**
+		 * @return Indica si en el nodo se da una condición de error de traducción.
+		 */
+		public boolean isNodeWithErrors() {
+			return nodeWithErrors;
+		}
+
+		/**
+		 * @param nodeWithErrors Establece si en el nodo se da una condición de error de traducción.
+		 */
+		public void setNodeWithErrors(boolean nodeWithErrors) {
+			this.nodeWithErrors = nodeWithErrors;
+		}
+
+		/**
+		 * @return Nodo traducción del actual.
+		 */
+		public LocationAwareElement getRelatedNode() {
+			return relatedNode;
+		}
+
+		/**
+		 * @param relatedNode Nodo traducción del actual.
+		 */
+		public void setRelatedNode(LocationAwareElement relatedNode) {
+			this.relatedNode = relatedNode;
+		}
+		
+		/**
+		 * @return Ítem de árbol JavaFX que representa el actual nodo de traducción.
+		 */
+		public TreeItem<LocationAwareElement> getVisualNode() {
+			return visualNode;
+		}
+
+		/**
+		 * @param visualRelatedNode Ítem de árbol JavaFX que representa el actual nodo de traducción.
+		 */
+		public void setVisualNode(TreeItem<LocationAwareElement> visualNode) {
+			this.visualNode = visualNode;
+		}
+
+		/* (non-Javadoc)
+		 * @see org.dom4j.tree.AbstractElement#toString()
+		 */
+		public String toString() {
+			return "<" + this.getName() + "> " + GestiónDOM.compactaCadenaXML(this.getText());			
 		}
 	}
 }
