@@ -1,21 +1,24 @@
 package org.neocities.renacer.docbook.translate.view;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.neocities.renacer.docbook.translate.model.TraducciónDocBook;
-import org.neocities.renacer.docbook.translate.TraducciónDocBookGUI;
-
+import org.neocities.renacer.util.NumberedSAXReader;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 
 /**
@@ -26,9 +29,9 @@ import javafx.scene.input.TransferMode;
 public class LienzoGeneralControlador {
 
 	@FXML
-	TreeView<String> libroOrigenÁrbol;
+	TreeView<NumberedSAXReader.LocationAwareElement> libroOrigenÁrbol;
 	@FXML
-	TreeView<String> libroDestinoÁrbol;
+	TreeView<NumberedSAXReader.LocationAwareElement> libroDestinoÁrbol;
 	@FXML
 	TextArea áreaTextoPO;
 
@@ -40,6 +43,8 @@ public class LienzoGeneralControlador {
 	 */
 	@FXML
 	private void initialize() {
+		List<String> estilosNodoÁrbol = Arrays.asList("nodoOK", "nodoKO");
+
 		/*
 		 * Configuración de los gestos de arrastrar y soltar en los controles.
 		 */
@@ -81,6 +86,47 @@ public class LienzoGeneralControlador {
 
 				evento.setDropCompleted(esExitoso);
 				evento.consume();
+			}
+		});
+
+		libroOrigenÁrbol.setCellFactory(treeView -> new TreeCell<NumberedSAXReader.LocationAwareElement>() {
+			@Override
+			public void updateItem(NumberedSAXReader.LocationAwareElement nodo, boolean vacío) {
+				super.updateItem(nodo, vacío);
+				getStyleClass().removeAll(estilosNodoÁrbol);
+
+				if (nodo == null) {
+					setText("");
+					return;
+				}
+
+				if (vacío) {
+					setText(nodo.toString());
+				} else {
+					setText(nodo.toString());
+					String estiloNodoÁrbol = "nodoOK";
+					if (nodo.isNodeWithErrors())
+						estiloNodoÁrbol = "nodoKO";
+					getStyleClass().add(estiloNodoÁrbol);
+				}
+			}
+		});
+
+		libroOrigenÁrbol.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent evento) {
+				// Si se ha establecido el libro de destino, mostrar el nodo traducido
+				// correspondiente al que se selecciona.
+				if (traducciónPO.getLibroDestinoDoc() != null && evento.getClickCount() == 1) {
+					NumberedSAXReader.LocationAwareElement nodo = libroOrigenÁrbol.getSelectionModel().getSelectedItem()
+							.getValue();
+					if (nodo.getRelatedNode() != null) {
+						TreeItem<NumberedSAXReader.LocationAwareElement> visualNode = nodo.getRelatedNode()
+								.getVisualNode();
+						libroDestinoÁrbol.getSelectionModel().select(visualNode);
+						libroDestinoÁrbol.scrollTo(libroDestinoÁrbol.getRow(visualNode));
+					}
+				}
 			}
 		});
 
@@ -135,9 +181,11 @@ public class LienzoGeneralControlador {
 	 *            de pila.
 	 * @return Subárbol construido a partir de la raíz especificada.
 	 */
-	private TreeItem<String> construyeÁrbolDesdeElementoDOM(Element elementoRaízSubárbol) {
-		TreeItem<String> elementoÁrbolVisual = new TreeItem<String>(
-				"<" + elementoRaízSubárbol.getName() + "> " + elementoRaízSubárbol.getTextTrim());
+	private TreeItem<NumberedSAXReader.LocationAwareElement> construyeÁrbolDesdeElementoDOM(
+			Element elementoRaízSubárbol) {
+		TreeItem<NumberedSAXReader.LocationAwareElement> elementoÁrbolVisual = new TreeItem<>(
+				(NumberedSAXReader.LocationAwareElement) elementoRaízSubárbol);
+		((NumberedSAXReader.LocationAwareElement) elementoRaízSubárbol).setVisualNode(elementoÁrbolVisual);
 		for (Element nodoHijo : elementoRaízSubárbol.elements()) {
 			elementoÁrbolVisual.getChildren().add(construyeÁrbolDesdeElementoDOM(nodoHijo));
 		}
