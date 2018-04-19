@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import org.neocities.renacer.docbook.translate.model.TraducciónDocBook;
 import org.neocities.renacer.docbook.translate.view.LienzoGeneralControlador;
+import org.neocities.renacer.docbook.translate.view.LienzoRaízControlador;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -58,6 +59,11 @@ public class TraducciónDocBookGUI extends Application {
 			Scene escena = new Scene(lienzoRaíz);
 			escenarioPrimario.setScene(escena);
 			escenarioPrimario.show();
+			
+			// Cesión de acceso al GUI y al modelo de dominio, para el controlador del lienzo raíz.
+			LienzoRaízControlador controlador = cargador.getController();
+			controlador.setTraducciónGUI(this);
+			controlador.setTraducciónPO(traducciónPO);
 			
 		} catch (IOException ioe) {
 			BITÁCORA.log(Level.SEVERE, "Imposible cargar la definición del lienzo raíz: ", ioe);

@@ -123,6 +123,17 @@ public class TraducciónDocBook {
 	}
 
 	/**
+	 * Establecimiento del fichero PO, de traducción del idioma de origen al de
+	 * destino.
+	 * 
+	 * @param ficheroPO
+	 *            Fichero PO donde se volcará la traducción.
+	 */
+	public void estableceFicheroPO(File ficheroPO) {
+		this.ficheroPO = ficheroPO;
+	}
+
+	/**
 	 * @return the libroOrigenDoc
 	 */
 	public Document getLibroOrigenDoc() {
@@ -286,7 +297,16 @@ public class TraducciónDocBook {
 	public String obténSubtítuloLibro(Document libro) {
 		return GestiónDOM.obténTextoContenidoNodo(libro, "/book/info/subtitle");
 	}
-
+	
+	/**
+	 * Obtención del contenido de la traducción PO, en forma de cadena de caracteres.
+	 * 
+	 * @return	Cadena de caracteres de la traducción PO actual.
+	 */
+	public String obténContenidoPO() {
+		return baosPO != null ? baosPO.toString() : "<Aún no establecido>";
+	}
+	
 	/**
 	 * Obtención del número de repeticiones con las que aparece una cadena dada,
 	 * dentro de un mapa de cadenas mantenida por la clase.

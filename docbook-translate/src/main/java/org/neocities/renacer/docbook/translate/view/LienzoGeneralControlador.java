@@ -11,6 +11,7 @@ import org.neocities.renacer.docbook.translate.TraducciónDocBookGUI;
 
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.DragEvent;
@@ -18,7 +19,7 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 
 /**
- * Controlador del lienzo general del GUI del artefacto de Soporte a traducción.
+ * Controlador del lienzo general del GUI del artefacto de soporte a traducción.
  * 
  * @author avega
  */
@@ -28,6 +29,8 @@ public class LienzoGeneralControlador {
 	TreeView<String> libroOrigenÁrbol;
 	@FXML
 	TreeView<String> libroDestinoÁrbol;
+	@FXML
+	TextArea áreaTextoPO;
 
 	private TraducciónDocBook traducciónPO;
 	private final static Logger BITÁCORA = Logger.getLogger(LienzoGeneralControlador.class.getName());
@@ -63,9 +66,12 @@ public class LienzoGeneralControlador {
 					try {
 						traducciónPO.estableceLibroOrigen(
 								db.getString().replaceFirst("file://", "").replaceAll("\n|\r", ""));
-
 						libroOrigenÁrbol.setRoot(
 								construyeÁrbolDesdeElementoDOM(traducciónPO.getLibroOrigenDoc().getRootElement()));
+						libroOrigenÁrbol.getRoot().setExpanded(true);
+						if (traducciónPO.getLibroDestinoDoc() != null)
+							traducciónPO.generaPO();
+						áreaTextoPO.setText(traducciónPO.obténContenidoPO());
 						esExitoso = true;
 					} catch (FileNotFoundException | DocumentException e) {
 						BITÁCORA.log(Level.SEVERE, "Imposible cargar el libro origen: ", e);
@@ -101,9 +107,12 @@ public class LienzoGeneralControlador {
 					try {
 						traducciónPO.estableceLibroDestino(
 								db.getString().replaceFirst("file://", "").replaceAll("\n|\r", ""));
-
 						libroDestinoÁrbol.setRoot(
 								construyeÁrbolDesdeElementoDOM(traducciónPO.getLibroDestinoDoc().getRootElement()));
+						libroDestinoÁrbol.getRoot().setExpanded(true);
+						if (traducciónPO.getLibroOrigenDoc() != null)
+							traducciónPO.generaPO();
+						áreaTextoPO.setText(traducciónPO.obténContenidoPO());
 						esExitoso = true;
 					} catch (FileNotFoundException | DocumentException e) {
 						BITÁCORA.log(Level.SEVERE, "Imposible cargar el libro destino: ", e);
@@ -120,6 +129,11 @@ public class LienzoGeneralControlador {
 	/**
 	 * Construcción recursiva de un árbol de nodos, JavaFX, con el contenido del
 	 * documento DOM cuya raíz se especifica.
+	 * 
+	 * @param elementoRaízSubárbol
+	 *            Elemento DOM raíz del subárbol construido en la presente llamada
+	 *            de pila.
+	 * @return Subárbol construido a partir de la raíz especificada.
 	 */
 	private TreeItem<String> construyeÁrbolDesdeElementoDOM(Element elementoRaízSubárbol) {
 		TreeItem<String> elementoÁrbolVisual = new TreeItem<String>(
@@ -127,6 +141,9 @@ public class LienzoGeneralControlador {
 		for (Element nodoHijo : elementoRaízSubárbol.elements()) {
 			elementoÁrbolVisual.getChildren().add(construyeÁrbolDesdeElementoDOM(nodoHijo));
 		}
+		if (elementoRaízSubárbol.getName().equals("info"))
+			elementoÁrbolVisual.setExpanded(true);
+
 		return elementoÁrbolVisual;
 	}
 
