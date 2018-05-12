@@ -22,18 +22,18 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 
 /**
- * Controlador del lienzo general del GUI del artefacto de soporte a traducción.
+ * Controlador del lienzo general del GUI del artefacto de soporte PO a traducción.
  * 
  * @author avega
  */
 public class LienzoGeneralControlador {
 
 	@FXML
-	TreeView<NumberedSAXReader.LocationAwareElement> libroOrigenÁrbol;
+	private TreeView<NumberedSAXReader.LocationAwareElement> libroOrigenÁrbol;
 	@FXML
-	TreeView<NumberedSAXReader.LocationAwareElement> libroDestinoÁrbol;
+	private TreeView<NumberedSAXReader.LocationAwareElement> libroDestinoÁrbol;
 	@FXML
-	TextArea áreaTextoPO;
+	private TextArea áreaTextoPO;
 
 	private TraducciónDocBook traducciónPO;
 	private final static Logger BITÁCORA = Logger.getLogger(LienzoGeneralControlador.class.getName());
@@ -121,10 +121,15 @@ public class LienzoGeneralControlador {
 					NumberedSAXReader.LocationAwareElement nodo = libroOrigenÁrbol.getSelectionModel().getSelectedItem()
 							.getValue();
 					if (nodo.getRelatedNode() != null) {
-						TreeItem<NumberedSAXReader.LocationAwareElement> visualNode = nodo.getRelatedNode()
+						TreeItem<NumberedSAXReader.LocationAwareElement> nodoVisual = nodo.getRelatedNode()
 								.getVisualNode();
-						libroDestinoÁrbol.getSelectionModel().select(visualNode);
-						libroDestinoÁrbol.scrollTo(libroDestinoÁrbol.getRow(visualNode));
+						libroDestinoÁrbol.getSelectionModel().select(nodoVisual);
+						libroDestinoÁrbol.scrollTo(libroDestinoÁrbol.getSelectionModel().getSelectedIndex());
+
+						String patrónBúsquedaPO = "#: " + traducciónPO.getLibroOrigenFichero().getName() + ":"
+								+ nodo.getLineNumber();
+						int índice = áreaTextoPO.getText().indexOf(patrónBúsquedaPO);
+						áreaTextoPO.selectRange(índice, índice + patrónBúsquedaPO.length());
 					}
 				}
 			}
@@ -193,6 +198,14 @@ public class LienzoGeneralControlador {
 			elementoÁrbolVisual.setExpanded(true);
 
 		return elementoÁrbolVisual;
+	}
+
+	/**
+	 * @return El árbol de nodos, JavaFX, con el contenido del documento DOM en el
+	 *         idioma de origen.
+	 */
+	public TreeView<NumberedSAXReader.LocationAwareElement> getLibroOrigenÁrbol() {
+		return libroOrigenÁrbol;
 	}
 
 	/**

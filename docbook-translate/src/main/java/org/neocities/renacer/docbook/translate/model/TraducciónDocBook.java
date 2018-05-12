@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +44,7 @@ public class TraducciónDocBook {
 	private static Properties config = new Properties();
 	private ByteArrayOutputStream baosPO = null;
 	private HashMap<String, MutableInteger> mapaCadenas = new HashMap<String, MutableInteger>();
+	private LinkedList<NumberedSAXReader.LocationAwareElement> listaErroresTraducción = null;
 	private ParticionadorFrases particionador = new ParticionadorFrases();
 	private final static String TEXTO_NODO_NULO = "[*** Nulo ***]",
 			TEXTO_NODO_SIN_TRADUCCIÓN = "[*** Sin traducción ***]";
@@ -149,6 +151,13 @@ public class TraducciónDocBook {
 	}
 
 	/**
+	 * @return the libroOrigenFichero
+	 */
+	public File getLibroOrigenFichero() {
+		return libroOrigenFichero;
+	}
+
+	/**
 	 * Análisis de ficheros XML contenedores de libros esquematizados según el
 	 * estándar DocBook, y conversión de los mismos a un árbol de objetos Java
 	 * apropiado.
@@ -209,11 +218,16 @@ public class TraducciónDocBook {
 					} else {
 						textoNodoDestino = TEXTO_NODO_NULO;
 					}
-					((NumberedSAXReader.LocationAwareElement) nodoOrigen)
-							.setRelatedNode((LocationAwareElement) nodoDestino);
+					// ¡Hay traducción! Se establece el nodo que la constituye.
+					((LocationAwareElement) nodoOrigen).setRelatedNode((LocationAwareElement) nodoDestino);
 				} else {
+					// ¡No hay traducción! Se indica el hecho y se encola la misma.
 					textoNodoDestino = TEXTO_NODO_SIN_TRADUCCIÓN;
-					((NumberedSAXReader.LocationAwareElement) nodoOrigen).setNodeWithErrors(true);
+					((LocationAwareElement) nodoOrigen).setNodeWithErrors(true);
+
+					if (!listaErroresTraducción.contains((LocationAwareElement) nodoOrigen)) {
+						listaErroresTraducción.add((LocationAwareElement) nodoOrigen);
+					}
 				}
 
 				String[] listaFrasesOrigen = particionador.obténFrases(textoNodoOrigen),
@@ -233,9 +247,14 @@ public class TraducciónDocBook {
 						escritorPO
 								.println(String.format(config.getProperty("po.cuerpo.línea4"), listaFrasesDestino[j]));
 					} catch (IndexOutOfBoundsException ioobe) {
+						// ¡No hay traducción! Se indica el hecho y se encola la misma.
 						escritorPO.println(
 								String.format(config.getProperty("po.cuerpo.línea4"), TEXTO_NODO_SIN_TRADUCCIÓN));
 						((NumberedSAXReader.LocationAwareElement) nodoOrigen).setNodeWithErrors(true);
+
+						if (!listaErroresTraducción.contains((LocationAwareElement) nodoOrigen)) {
+							listaErroresTraducción.add((LocationAwareElement) nodoOrigen);
+						}
 					}
 				}
 
@@ -251,8 +270,8 @@ public class TraducciónDocBook {
 	/**
 	 * Análisis de ficheros XML contenedores de libros esquematizados según el
 	 * estándar DocBook; y generación de una representación de la estructura de
-	 * nodos que se dan en los mismos, en ficheros con el mismo nombre que los
-	 * originales, pero con extensión "txt".
+	 * nodos que se dan en los mismos, en un fichero cuyo escritor se pasa como
+	 * argumento.
 	 * 
 	 * @param escritorFE
 	 *            Escritor del fichero donde escribir la estructura de nodos.
@@ -341,6 +360,7 @@ public class TraducciónDocBook {
 			baosPO = new ByteArrayOutputStream((int) (libroOrigenFichero.length() * 2));
 			escritorPO = new PrintWriter(new BufferedOutputStream(baosPO));
 			particionador.setCaracDelimitadores(".?!<()");
+			listaErroresTraducción = new LinkedList<>();
 
 			/*
 			 * Creación de la cabecera del fichero.
@@ -408,10 +428,17 @@ public class TraducciónDocBook {
 				this.muestraEstructuraSubárbol(escritorEstructura, nodoPrimerNivel, numera);
 			}
 		} catch (IOException ioe) {
-			BITÁCORA.log(Level.SEVERE, "Error de lectura/escritura al intentar abrir el fichero de estructura: ", ioe);
+			BITÁCORA.log(Level.SEVERE, "Error de lectura/escritura con el fichero de estructura: ", ioe);
 			ioe.printStackTrace();
 		} finally {
 			escritorEstructura.close();
 		}
+	}
+
+	/**
+	 * @return La lista de errores de traducción de esta Traducción PO.
+	 */
+	public LinkedList<NumberedSAXReader.LocationAwareElement> getListaErroresTraducción() {
+		return listaErroresTraducción;
 	}
 }

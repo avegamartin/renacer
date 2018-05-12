@@ -16,8 +16,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 /**
- * Interfaz Gráfica de Usuario principal del artefacto de traducción de libros
- * estructurados según el estándar DocBook v5.x.
+ * Interfaz Gráfica de Usuario principal del artefacto de generación de ficheros de descripción,
+ * de traducción, de libros estructurados según el estándar DocBook v5.x.
  *  
  * @author avega
  */
@@ -29,6 +29,9 @@ public class TraducciónDocBookGUI extends Application {
 	
 	// Objetos de Dominio
 	private TraducciónDocBook traducciónPO;
+	
+	// Controladores de la vista
+	private LienzoGeneralControlador lienzoGeneralControlador;
 	
 	private final static Logger BITÁCORA = Logger.getLogger(TraducciónDocBookGUI.class.getName());
 	
@@ -60,10 +63,9 @@ public class TraducciónDocBookGUI extends Application {
 			escenarioPrimario.setScene(escena);
 			escenarioPrimario.show();
 			
-			// Cesión de acceso al GUI y al modelo de dominio, para el controlador del lienzo raíz.
+			// Cesión de acceso al GUI por parte del controlador del lienzo raíz.
 			LienzoRaízControlador controlador = cargador.getController();
 			controlador.setTraducciónGUI(this);
-			controlador.setTraducciónPO(traducciónPO);
 			
 		} catch (IOException ioe) {
 			BITÁCORA.log(Level.SEVERE, "Imposible cargar la definición del lienzo raíz: ", ioe);
@@ -85,8 +87,8 @@ public class TraducciónDocBookGUI extends Application {
 			lienzoRaíz.setCenter(lienzoGeneral);
 			
 			// Cesión de acceso al modelo de dominio, por parte del controlador del lienzo general.
-			LienzoGeneralControlador controlador = cargador.getController();
-			controlador.setTraducciónPO(traducciónPO);
+			lienzoGeneralControlador = cargador.getController();
+			lienzoGeneralControlador.setTraducciónPO(traducciónPO);
 			
 		} catch (IOException ioe) {
 			BITÁCORA.log(Level.SEVERE, "Imposible cargar la definición del lienzo general: ", ioe);
@@ -95,10 +97,24 @@ public class TraducciónDocBookGUI extends Application {
 	}
 
 	/**
-	 * @return El escenario primario de la aplicación.
+	 * @return El escenario primario del artefacto.
 	 */
 	public Stage getEscenarioPrimario() {
 		return escenarioPrimario;
+	}
+
+	/**
+	 * @return El objeto de dominio de traducción PO de libros.
+	 */
+	public TraducciónDocBook getTraducciónPO() {
+		return traducciónPO;
+	}
+
+	/**
+	 * @return El controlador del lienzo general del artefacto.
+	 */
+	public LienzoGeneralControlador getLienzoGeneralControlador() {
+		return lienzoGeneralControlador;
 	}
 
 	public static void main(String[] args) {

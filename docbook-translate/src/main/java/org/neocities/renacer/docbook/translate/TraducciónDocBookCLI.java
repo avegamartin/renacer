@@ -14,8 +14,8 @@ import org.dom4j.DocumentException;
 import org.neocities.renacer.docbook.translate.model.TraducciónDocBook;
 
 /**
- * Interfaz de Línea de Comandos del artefacto de traducción de libros
- * estructurados según el estándar DocBook v5.x.
+ * Interfaz de Línea de Comandos del artefacto de generación de ficheros de descripción,
+ * de traducción, de libros estructurados según el estándar DocBook v5.x.
  *  
  * @author avega
  */
