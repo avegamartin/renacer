@@ -3,26 +3,42 @@ package org.neocities.renacer.docbook.translate.view;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
-import org.neocities.renacer.docbook.translate.model.TraducciónDocBook;
+import org.neocities.renacer.docbook.translate.TraducciónDocBookGUI;
+import org.neocities.renacer.docbook.translate.model.FraseConTraducción;
 import org.neocities.renacer.util.NumberedSAXReader;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
+import javafx.scene.control.Control;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 /**
- * Controlador del lienzo general del GUI del artefacto de soporte PO a traducción.
+ * Controlador del lienzo general del GUI del artefacto de soporte PO a
+ * traducción.
  * 
  * @author avega
  */
@@ -35,7 +51,10 @@ public class LienzoGeneralControlador {
 	@FXML
 	private TextArea áreaTextoPO;
 
-	private TraducciónDocBook traducciónPO;
+	private TableView<FraseConTraducción> tablaFrases = new TableView<FraseConTraducción>();
+	private ObservableList<FraseConTraducción> listaFrases = FXCollections.observableArrayList();
+
+	private TraducciónDocBookGUI traducciónGUI;
 	private final static Logger BITÁCORA = Logger.getLogger(LienzoGeneralControlador.class.getName());
 
 	/**
@@ -69,14 +88,14 @@ public class LienzoGeneralControlador {
 				if (db.hasString() && db.getString().startsWith("file://")
 						&& evento.getDragboard().getString().replaceAll("\n|\r", "").endsWith(".xml")) {
 					try {
-						traducciónPO.estableceLibroOrigen(
+						traducciónGUI.getTraducciónPO().estableceLibroOrigen(
 								db.getString().replaceFirst("file://", "").replaceAll("\n|\r", ""));
-						libroOrigenÁrbol.setRoot(
-								construyeÁrbolDesdeElementoDOM(traducciónPO.getLibroOrigenDoc().getRootElement()));
+						libroOrigenÁrbol.setRoot(construyeÁrbolDesdeElementoDOM(
+								traducciónGUI.getTraducciónPO().getLibroOrigenDoc().getRootElement()));
 						libroOrigenÁrbol.getRoot().setExpanded(true);
-						if (traducciónPO.getLibroDestinoDoc() != null)
-							traducciónPO.generaPO();
-						áreaTextoPO.setText(traducciónPO.obténContenidoPO());
+						if (traducciónGUI.getTraducciónPO().getLibroDestinoDoc() != null)
+							traducciónGUI.getTraducciónPO().generaPO();
+						áreaTextoPO.setText(traducciónGUI.getTraducciónPO().obténContenidoPO());
 						esExitoso = true;
 					} catch (FileNotFoundException | DocumentException e) {
 						BITÁCORA.log(Level.SEVERE, "Imposible cargar el libro origen: ", e);
@@ -117,7 +136,7 @@ public class LienzoGeneralControlador {
 			public void handle(MouseEvent evento) {
 				// Si se ha establecido el libro de destino, mostrar el nodo traducido
 				// correspondiente al que se selecciona.
-				if (traducciónPO.getLibroDestinoDoc() != null && evento.getClickCount() == 1) {
+				if (traducciónGUI.getTraducciónPO().getLibroDestinoDoc() != null && evento.getClickCount() <= 2) {
 					NumberedSAXReader.LocationAwareElement nodo = libroOrigenÁrbol.getSelectionModel().getSelectedItem()
 							.getValue();
 					if (nodo.getRelatedNode() != null) {
@@ -126,10 +145,33 @@ public class LienzoGeneralControlador {
 						libroDestinoÁrbol.getSelectionModel().select(nodoVisual);
 						libroDestinoÁrbol.scrollTo(libroDestinoÁrbol.getSelectionModel().getSelectedIndex());
 
-						String patrónBúsquedaPO = "#: " + traducciónPO.getLibroOrigenFichero().getName() + ":"
+						String patrónBúsquedaPO = "#: "
+								+ traducciónGUI.getTraducciónPO().getLibroOrigenFichero().getName() + ":"
 								+ nodo.getLineNumber();
-						int índice = áreaTextoPO.getText().indexOf(patrónBúsquedaPO);
-						áreaTextoPO.selectRange(índice, índice + patrónBúsquedaPO.length());
+						int índiceDesde = áreaTextoPO.getText().indexOf(patrónBúsquedaPO);
+						áreaTextoPO.selectRange(índiceDesde, índiceDesde + patrónBúsquedaPO.length());
+
+						/*
+						 * Visualización tabular de la traduccción de frases constituyentes del nodo.
+						 */
+						if (evento.getClickCount() == 2) {
+							índiceDesde += patrónBúsquedaPO.length() + 1;
+							int índiceHasta = áreaTextoPO.getText().indexOf("\n\n", índiceDesde);
+							if (índiceHasta == -1)
+								índiceHasta = áreaTextoPO.getText().length() - 1;
+							StringTokenizer st = new StringTokenizer(
+									áreaTextoPO.getText().substring(índiceDesde, índiceHasta), "\n");
+							listaFrases.clear();
+							while (st.hasMoreTokens()) {
+								String fraseOrigen = st.nextToken(), fraseDestino = st.nextToken();
+
+								listaFrases.add(new FraseConTraducción(
+										fraseOrigen.substring(fraseOrigen.indexOf('"') + 1, fraseOrigen.length() - 1),
+										fraseDestino.substring(fraseDestino.indexOf('"') + 1,
+												fraseDestino.length() - 1)));
+							}
+							visualizaFrasesDelNodo();
+						}
 					}
 				}
 			}
@@ -156,14 +198,14 @@ public class LienzoGeneralControlador {
 				if (db.hasString() && db.getString().startsWith("file://")
 						&& evento.getDragboard().getString().replaceAll("\n|\r", "").endsWith(".xml")) {
 					try {
-						traducciónPO.estableceLibroDestino(
+						traducciónGUI.getTraducciónPO().estableceLibroDestino(
 								db.getString().replaceFirst("file://", "").replaceAll("\n|\r", ""));
-						libroDestinoÁrbol.setRoot(
-								construyeÁrbolDesdeElementoDOM(traducciónPO.getLibroDestinoDoc().getRootElement()));
+						libroDestinoÁrbol.setRoot(construyeÁrbolDesdeElementoDOM(
+								traducciónGUI.getTraducciónPO().getLibroDestinoDoc().getRootElement()));
 						libroDestinoÁrbol.getRoot().setExpanded(true);
-						if (traducciónPO.getLibroOrigenDoc() != null)
-							traducciónPO.generaPO();
-						áreaTextoPO.setText(traducciónPO.obténContenidoPO());
+						if (traducciónGUI.getTraducciónPO().getLibroOrigenDoc() != null)
+							traducciónGUI.getTraducciónPO().generaPO();
+						áreaTextoPO.setText(traducciónGUI.getTraducciónPO().obténContenidoPO());
 						esExitoso = true;
 					} catch (FileNotFoundException | DocumentException e) {
 						BITÁCORA.log(Level.SEVERE, "Imposible cargar el libro destino: ", e);
@@ -175,6 +217,53 @@ public class LienzoGeneralControlador {
 				evento.consume();
 			}
 		});
+	}
+
+	/**
+	 * Visualización del diálogo de frases constituyentes del nodo traducible.
+	 */
+	@SuppressWarnings("unchecked")
+	private void visualizaFrasesDelNodo() {
+		Stage diálogoFrases = new Stage();
+		Scene escena = new Scene(new AnchorPane(), 650, 500);
+
+		diálogoFrases.sizeToScene();
+		diálogoFrases.setTitle("Frases del nodo");
+		diálogoFrases.initModality(Modality.WINDOW_MODAL);
+		diálogoFrases.initOwner(traducciónGUI.getEscenarioPrimario());
+
+		TableColumn<FraseConTraducción, String> fraseOrigenCol = new TableColumn<>("Idioma Origen");
+		fraseOrigenCol.setCellValueFactory(new PropertyValueFactory<>("fraseOrigen"));
+		fraseOrigenCol.setCellFactory(tc -> {
+			TableCell<FraseConTraducción, String> celda = new TableCell<>();
+			Text texto = new Text();
+			celda.setGraphic(texto);
+			celda.setPrefHeight(Control.USE_COMPUTED_SIZE);
+			texto.wrappingWidthProperty().bind(celda.widthProperty());
+			texto.textProperty().bind(celda.itemProperty());
+			return celda;
+		});
+
+		TableColumn<FraseConTraducción, String> fraseDestinoCol = new TableColumn<>("Idioma Destino");
+		fraseDestinoCol.setCellValueFactory(new PropertyValueFactory<>("fraseDestino"));
+		fraseDestinoCol.setCellFactory(fraseOrigenCol.getCellFactory());
+
+		tablaFrases.setEditable(false);
+		tablaFrases.setItems(listaFrases);
+		tablaFrases.getColumns().clear();
+		tablaFrases.getColumns().addAll(fraseOrigenCol, fraseDestinoCol);
+		tablaFrases.setLayoutX(5);
+		tablaFrases.setLayoutY(5);
+		tablaFrases.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		AnchorPane.setTopAnchor(tablaFrases, 0.0);
+		AnchorPane.setBottomAnchor(tablaFrases, 0.0);
+		AnchorPane.setLeftAnchor(tablaFrases, 0.0);
+		AnchorPane.setRightAnchor(tablaFrases, 0.0);
+
+		((AnchorPane) escena.getRoot()).getChildren().clear();
+		((AnchorPane) escena.getRoot()).getChildren().addAll(tablaFrases);
+		diálogoFrases.setScene(escena);
+		diálogoFrases.showAndWait();
 	}
 
 	/**
@@ -209,12 +298,14 @@ public class LienzoGeneralControlador {
 	}
 
 	/**
-	 * Establecimiento de la clase de negocio de traducción de libros DocBook.
+	 * Establecimiento del objeto de interfaz gráfica al artefacto de soporte PO a
+	 * traducción.
 	 * 
-	 * @param traducciónPO
-	 *            Objeto de Traducción de Libro PO a establecer.
+	 * @param traducciónGUI
+	 *            Objeto de interfaz gráfica al artefacto de soporte PO a
+	 *            traducción.
 	 */
-	public void setTraducciónPO(TraducciónDocBook traducciónPO) {
-		this.traducciónPO = traducciónPO;
+	public void setTraducciónGUI(TraducciónDocBookGUI traducciónGUI) {
+		this.traducciónGUI = traducciónGUI;
 	}
 }

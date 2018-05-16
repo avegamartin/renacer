@@ -88,7 +88,7 @@ public class TraducciónDocBookGUI extends Application {
 			
 			// Cesión de acceso al modelo de dominio, por parte del controlador del lienzo general.
 			lienzoGeneralControlador = cargador.getController();
-			lienzoGeneralControlador.setTraducciónPO(traducciónPO);
+			lienzoGeneralControlador.setTraducciónGUI(this);
 			
 		} catch (IOException ioe) {
 			BITÁCORA.log(Level.SEVERE, "Imposible cargar la definición del lienzo general: ", ioe);
