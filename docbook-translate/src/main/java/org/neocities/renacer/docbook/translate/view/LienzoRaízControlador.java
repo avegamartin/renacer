@@ -10,6 +10,8 @@ import org.neocities.renacer.util.NumberedSAXReader.LocationAwareElement;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.input.MouseButton;
@@ -28,6 +30,15 @@ public class LienzoRaízControlador {
 	private TreeView<LocationAwareElement> libroOrigenÁrbol;
 	private NumberedSAXReader.LocationAwareElement últimoErrorVisitado = null;
 
+	@FXML
+	private MenuItem ítemMenúSalvarPO;
+	@FXML
+	private Button botónSalvarPO;
+	@FXML
+	private Button botónErrorAnterior;
+	@FXML
+	private Button botónErrorSiguiente;
+
 	/**
 	 * Apertura de un selector de ficheros para salvado de la traducción PO.
 	 */
@@ -44,6 +55,8 @@ public class LienzoRaízControlador {
 				ficheroPO = new File(ficheroPO.getPath() + ".po");
 			traducciónGUI.getTraducciónPO().estableceFicheroPO(ficheroPO);
 			traducciónGUI.getTraducciónPO().generaFicheroPO();
+			botónSalvarPO.setDisable(true);
+			ítemMenúSalvarPO.setDisable(true);
 		}
 	}
 
@@ -73,22 +86,18 @@ public class LienzoRaízControlador {
 	 */
 	@FXML
 	private void manejaLocalizaErrorAnterior() {
-		if (iteListaErroresTraducción == null) {
-			inicializaInfoTraducción();
-		}
+		if (iteListaErroresTraducción == null)
+			return;
+
 		if (iteListaErroresTraducción.hasPrevious()) {
 			LocationAwareElement errorPrevio = iteListaErroresTraducción.previous();
-			
+
 			if (últimoErrorVisitado != null && errorPrevio == últimoErrorVisitado) {
 				errorPrevio = iteListaErroresTraducción.previous();
 			}
-			
+
 			últimoErrorVisitado = errorPrevio;
-			TreeItem<LocationAwareElement> nodoVisual = errorPrevio.getVisualNode();
-			libroOrigenÁrbol.getSelectionModel().select(nodoVisual);
-			libroOrigenÁrbol.scrollTo(libroOrigenÁrbol.getSelectionModel().getSelectedIndex());
-			libroOrigenÁrbol.fireEvent(new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, MouseButton.PRIMARY, 1,
-					true, true, true, true, true, true, true, true, true, true, null));
+			visualizaÚltimoErrorVisitado();
 		}
 	}
 
@@ -97,31 +106,66 @@ public class LienzoRaízControlador {
 	 */
 	@FXML
 	private void manejaLocalizaErrorSiguiente() {
-		if (iteListaErroresTraducción == null) {
-			inicializaInfoTraducción();
-		}
+		if (iteListaErroresTraducción == null)
+			return;
+
 		if (iteListaErroresTraducción.hasNext()) {
 			LocationAwareElement errorPosterior = iteListaErroresTraducción.next();
-			
+
 			if (últimoErrorVisitado != null && errorPosterior == últimoErrorVisitado) {
 				errorPosterior = iteListaErroresTraducción.next();
 			}
-			
+
 			últimoErrorVisitado = errorPosterior;
-			TreeItem<LocationAwareElement> nodoVisual = errorPosterior.getVisualNode();
-			libroOrigenÁrbol.getSelectionModel().select(nodoVisual);
-			libroOrigenÁrbol.scrollTo(libroOrigenÁrbol.getSelectionModel().getSelectedIndex());
-			libroOrigenÁrbol.fireEvent(new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, MouseButton.PRIMARY, 1,
-					true, true, true, true, true, true, true, true, true, true, null));
+			visualizaÚltimoErrorVisitado();
 		}
+	}
+
+	/**
+	 * Visualización, en el árbol del libro de idioma de origen, del último error
+	 * visitado.
+	 */
+	private void visualizaÚltimoErrorVisitado() {
+		// Si el nodo con error de traducción no tiene aún especificada su posición,
+		// calcularla
+		if (últimoErrorVisitado.getIndexInTree() == -1) {
+			libroOrigenÁrbol.getSelectionModel().select(últimoErrorVisitado.getVisualNode());
+			últimoErrorVisitado.setIndexInTree(libroOrigenÁrbol.getSelectionModel().getSelectedIndex());
+		}
+
+		libroOrigenÁrbol.getSelectionModel().select(últimoErrorVisitado.getIndexInTree());
+		libroOrigenÁrbol.scrollTo(últimoErrorVisitado.getIndexInTree());
+		libroOrigenÁrbol.fireEvent(new MouseEvent(MouseEvent.MOUSE_CLICKED, 0, 0, 0, 0, MouseButton.PRIMARY, 1, true,
+				true, true, true, true, true, true, true, true, true, null));
+		adecúaBotonesAListaErrores();
+	}
+
+	/**
+	 * Adecuación del estado de habilitación de los botones de recorrido de la lista
+	 * de errores, a la posición actual en la misma.
+	 */
+	private void adecúaBotonesAListaErrores() {
+		if (iteListaErroresTraducción.hasNext())
+			botónErrorSiguiente.setDisable(false);
+		else
+			botónErrorSiguiente.setDisable(true);
+
+		if (iteListaErroresTraducción.hasPrevious())
+			botónErrorAnterior.setDisable(false);
+		else
+			botónErrorAnterior.setDisable(true);
 	}
 
 	/**
 	 * Inicialización de la información necesaria sobre la traducción.
 	 */
-	private void inicializaInfoTraducción() {
+	void inicializaInfoTraducción() {
 		iteListaErroresTraducción = traducciónGUI.getTraducciónPO().getListaErroresTraducción().listIterator();
 		libroOrigenÁrbol = traducciónGUI.getLienzoGeneralControlador().getLibroOrigenÁrbol();
+		botónSalvarPO.setDisable(false);
+		ítemMenúSalvarPO.setDisable(false);
+		if (!traducciónGUI.getTraducciónPO().getListaErroresTraducción().isEmpty())
+			botónErrorSiguiente.setDisable(false);
 	}
 
 	/**

@@ -31,6 +31,7 @@ public class TraducciónDocBookGUI extends Application {
 	private TraducciónDocBook traducciónPO;
 	
 	// Controladores de la vista
+	private LienzoRaízControlador lienzoRaízControlador;
 	private LienzoGeneralControlador lienzoGeneralControlador;
 	
 	private final static Logger BITÁCORA = Logger.getLogger(TraducciónDocBookGUI.class.getName());
@@ -64,8 +65,8 @@ public class TraducciónDocBookGUI extends Application {
 			escenarioPrimario.show();
 			
 			// Cesión de acceso al GUI por parte del controlador del lienzo raíz.
-			LienzoRaízControlador controlador = cargador.getController();
-			controlador.setTraducciónGUI(this);
+			lienzoRaízControlador = cargador.getController();
+			lienzoRaízControlador.setTraducciónGUI(this);
 			
 		} catch (IOException ioe) {
 			BITÁCORA.log(Level.SEVERE, "Imposible cargar la definición del lienzo raíz: ", ioe);
@@ -86,7 +87,7 @@ public class TraducciónDocBookGUI extends Application {
 			// Colocación del lienzo general en el centro del lienzo raíz.
 			lienzoRaíz.setCenter(lienzoGeneral);
 			
-			// Cesión de acceso al modelo de dominio, por parte del controlador del lienzo general.
+			// Cesión de acceso al GUI por parte del controlador del lienzo general.
 			lienzoGeneralControlador = cargador.getController();
 			lienzoGeneralControlador.setTraducciónGUI(this);
 			
@@ -108,6 +109,13 @@ public class TraducciónDocBookGUI extends Application {
 	 */
 	public TraducciónDocBook getTraducciónPO() {
 		return traducciónPO;
+	}
+
+	/**
+	 * @return El controlador del lienzo raíz del artefacto.
+	 */
+	public LienzoRaízControlador getLienzoRaízControlador() {
+		return lienzoRaízControlador;
 	}
 
 	/**

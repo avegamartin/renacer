@@ -353,7 +353,7 @@ public class TraducciónDocBook {
 	/**
 	 * Generación de la traducción PO.
 	 */
-	public void generaPO() {
+	synchronized public void generaPO() {
 		PrintWriter escritorPO = null;
 
 		try {

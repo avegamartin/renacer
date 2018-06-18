@@ -106,7 +106,7 @@ public class NumberedSAXReader extends SAXReader {
 	 */
 	public static class LocationAwareElement extends DefaultElement {
 
-		private int lineNumber = -1;
+		private int lineNumber = -1, indexInTree = -1;
 		private boolean nodeWithErrors = false;
 		private LocationAwareElement relatedNode = null;
 		private TreeItem<LocationAwareElement> visualNode = null;
@@ -135,7 +135,8 @@ public class NumberedSAXReader extends SAXReader {
 		}
 
 		/**
-		 * @param lineNumber the lineNumber to set
+		 * @param lineNumber
+		 *            the lineNumber to set
 		 */
 		public void setLineNumber(int lineNumber) {
 			this.lineNumber = lineNumber;
@@ -149,7 +150,9 @@ public class NumberedSAXReader extends SAXReader {
 		}
 
 		/**
-		 * @param nodeWithErrors Establece si en el nodo se da una condición de error de traducción.
+		 * @param nodeWithErrors
+		 *            Establece si en el nodo se da una condición de error de
+		 *            traducción.
 		 */
 		public void setNodeWithErrors(boolean nodeWithErrors) {
 			this.nodeWithErrors = nodeWithErrors;
@@ -163,12 +166,13 @@ public class NumberedSAXReader extends SAXReader {
 		}
 
 		/**
-		 * @param relatedNode Nodo traducción del actual.
+		 * @param relatedNode
+		 *            Nodo traducción del actual.
 		 */
 		public void setRelatedNode(LocationAwareElement relatedNode) {
 			this.relatedNode = relatedNode;
 		}
-		
+
 		/**
 		 * @return Ítem de árbol JavaFX que representa el actual nodo de traducción.
 		 */
@@ -177,17 +181,37 @@ public class NumberedSAXReader extends SAXReader {
 		}
 
 		/**
-		 * @param visualRelatedNode Ítem de árbol JavaFX que representa el actual nodo de traducción.
+		 * @param visualRelatedNode
+		 *            Ítem de árbol JavaFX que representa el actual nodo de traducción.
 		 */
 		public void setVisualNode(TreeItem<LocationAwareElement> visualNode) {
 			this.visualNode = visualNode;
 		}
 
-		/* (non-Javadoc)
+		/**
+		 * @return Índice de posición, del actual nodo de traducción, en el árbol JavaFX
+		 *         donde está situado.
+		 */
+		public int getIndexInTree() {
+			return indexInTree;
+		}
+
+		/**
+		 * @param indexInTree
+		 *            Índice de posición, del actual nodo de traducción, en el árbol
+		 *            JavaFX donde está situado.
+		 */
+		public void setIndexInTree(int indexInTree) {
+			this.indexInTree = indexInTree;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see org.dom4j.tree.AbstractElement#toString()
 		 */
 		public String toString() {
-			return "<" + this.getName() + "> " + GestiónDOM.compactaCadenaXML(this.getText());			
+			return "<" + this.getName() + "> " + GestiónDOM.compactaCadenaXML(this.getText());
 		}
 	}
 }

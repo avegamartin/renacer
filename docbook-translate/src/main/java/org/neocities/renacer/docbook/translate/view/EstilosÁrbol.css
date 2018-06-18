@@ -4,4 +4,5 @@
 
 .tree-cell.nodoKO {
 	-fx-text-fill: red;
+	-fx-font-weight: bold;
 }

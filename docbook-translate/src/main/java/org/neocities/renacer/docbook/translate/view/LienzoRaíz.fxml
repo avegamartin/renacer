@@ -18,9 +18,9 @@
               <menus>
                 <Menu mnemonicParsing="false" text="Archivo">
                   <items>
-                        <MenuItem mnemonicParsing="false" onAction="#manejaSalvaFicheroPO" text="Guardar PO">
+                        <MenuItem fx:id="ítemMenúSalvarPO" disable="true" mnemonicParsing="false" onAction="#manejaSalvaFicheroPO" text="Salvar PO">
                            <accelerator>
-                              <KeyCodeCombination alt="UP" code="G" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
+                              <KeyCodeCombination alt="UP" code="S" control="DOWN" meta="UP" shift="UP" shortcut="UP" />
                            </accelerator>
                         </MenuItem>
                     <MenuItem mnemonicParsing="false" onAction="#manejaSalir" text="Salir">
@@ -42,10 +42,10 @@
             </MenuBar>
             <ToolBar prefHeight="40.0" prefWidth="200.0">
               <items>
-                <Button mnemonicParsing="false" onAction="#manejaSalvaFicheroPO" text="Salvar PO" />
+                <Button fx:id="botónSalvarPO" disable="true" mnemonicParsing="false" onAction="#manejaSalvaFicheroPO" text="Salvar PO" />
                   <Separator orientation="VERTICAL" />
-                  <Button mnemonicParsing="false" onAction="#manejaLocalizaErrorAnterior" text="Error anterior" />
-                  <Button mnemonicParsing="false" onAction="#manejaLocalizaErrorSiguiente" text="Error siguiente" />
+                  <Button fx:id="botónErrorAnterior" disable="true" mnemonicParsing="false" onAction="#manejaLocalizaErrorAnterior" text="Error anterior" />
+                  <Button fx:id="botónErrorSiguiente" disable="true" mnemonicParsing="false" onAction="#manejaLocalizaErrorSiguiente" text="Error siguiente" />
               </items>
             </ToolBar>
          </children>

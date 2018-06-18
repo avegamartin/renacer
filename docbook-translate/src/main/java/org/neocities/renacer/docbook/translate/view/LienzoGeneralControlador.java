@@ -11,14 +11,21 @@ import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.neocities.renacer.docbook.translate.TraducciónDocBookGUI;
 import org.neocities.renacer.docbook.translate.model.FraseConTraducción;
+import org.neocities.renacer.docbook.translate.model.TraducciónDocBook;
 import org.neocities.renacer.util.NumberedSAXReader;
+import org.neocities.renacer.util.NumberedSAXReader.LocationAwareElement;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Control;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -32,6 +39,8 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -50,6 +59,10 @@ public class LienzoGeneralControlador {
 	private TreeView<NumberedSAXReader.LocationAwareElement> libroDestinoÁrbol;
 	@FXML
 	private TextArea áreaTextoPO;
+	@FXML
+	private StackPane libroOrigenPila;
+	@FXML
+	private StackPane libroDestinoPila;
 
 	private TableView<FraseConTraducción> tablaFrases = new TableView<FraseConTraducción>();
 	private ObservableList<FraseConTraducción> listaFrases = FXCollections.observableArrayList();
@@ -86,16 +99,37 @@ public class LienzoGeneralControlador {
 				boolean esExitoso = false;
 
 				if (db.hasString() && db.getString().startsWith("file://")
-						&& evento.getDragboard().getString().replaceAll("\n|\r", "").endsWith(".xml")) {
+						&& db.getString().replaceAll("\n|\r", "").endsWith(".xml")) {
 					try {
+						ProgressIndicator indProgreso = new ProgressIndicator();
+						VBox cajaIndProgreso = new VBox(indProgreso);
+						cajaIndProgreso.setAlignment(Pos.CENTER);
+						libroOrigenPila.getChildren().add(cajaIndProgreso);
+
 						traducciónGUI.getTraducciónPO().estableceLibroOrigen(
 								db.getString().replaceFirst("file://", "").replaceAll("\n|\r", ""));
-						libroOrigenÁrbol.setRoot(construyeÁrbolDesdeElementoDOM(
-								traducciónGUI.getTraducciónPO().getLibroOrigenDoc().getRootElement()));
-						libroOrigenÁrbol.getRoot().setExpanded(true);
-						if (traducciónGUI.getTraducciónPO().getLibroDestinoDoc() != null)
-							traducciónGUI.getTraducciónPO().generaPO();
-						áreaTextoPO.setText(traducciónGUI.getTraducciónPO().obténContenidoPO());
+
+						CargaTraducciónLibrosServicio servicioSegPlano = new CargaTraducciónLibrosServicio();
+						servicioSegPlano.setLibroConstruyéndose(InstanciaLibro.ORIGEN);
+
+						servicioSegPlano.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+							@SuppressWarnings("unchecked")
+							@Override
+							public void handle(WorkerStateEvent wse) {
+								libroOrigenÁrbol.setRoot((TreeItem<LocationAwareElement>) wse.getSource().getValue());
+								libroOrigenÁrbol.getRoot().setExpanded(true);
+								
+								if (traducciónGUI.getTraducciónPO().getLibroDestinoDoc() != null) {
+									traducciónGUI.getLienzoRaízControlador().inicializaInfoTraducción();
+									áreaTextoPO.setText(traducciónGUI.getTraducciónPO().obténContenidoPO());
+								}
+								
+								libroOrigenPila.getChildren().remove(cajaIndProgreso);
+								libroOrigenPila.getChildren().remove(1); // Eliminamos el texto de fondo, dejando el árbol
+							}
+						});
+						
+						servicioSegPlano.start();
 						esExitoso = true;
 					} catch (FileNotFoundException | DocumentException e) {
 						BITÁCORA.log(Level.SEVERE, "Imposible cargar el libro origen: ", e);
@@ -163,12 +197,16 @@ public class LienzoGeneralControlador {
 									áreaTextoPO.getText().substring(índiceDesde, índiceHasta), "\n");
 							listaFrases.clear();
 							while (st.hasMoreTokens()) {
-								String fraseOrigen = st.nextToken(), fraseDestino = st.nextToken();
+								String fraseOrigen = st.nextToken();
+								if (!fraseOrigen.startsWith("msgid")) // Saltamos descriptor de contexto
+									fraseOrigen = st.nextToken();
+								String fraseDestino = st.nextToken();
 
 								listaFrases.add(new FraseConTraducción(
-										fraseOrigen.substring(fraseOrigen.indexOf('"') + 1, fraseOrigen.length() - 1),
-										fraseDestino.substring(fraseDestino.indexOf('"') + 1,
-												fraseDestino.length() - 1)));
+										fraseOrigen.substring(fraseOrigen.indexOf('"') + 1, fraseOrigen.length() - 1)
+												.trim(),
+										fraseDestino.substring(fraseDestino.indexOf('"') + 1, fraseDestino.length() - 1)
+												.trim()));
 							}
 							visualizaFrasesDelNodo();
 						}
@@ -196,16 +234,37 @@ public class LienzoGeneralControlador {
 				boolean esExitoso = false;
 
 				if (db.hasString() && db.getString().startsWith("file://")
-						&& evento.getDragboard().getString().replaceAll("\n|\r", "").endsWith(".xml")) {
+						&& db.getString().replaceAll("\n|\r", "").endsWith(".xml")) {
 					try {
+						ProgressIndicator indProgreso = new ProgressIndicator();
+						VBox cajaIndProgreso = new VBox(indProgreso);
+						cajaIndProgreso.setAlignment(Pos.CENTER);
+						libroDestinoPila.getChildren().add(cajaIndProgreso);
+
 						traducciónGUI.getTraducciónPO().estableceLibroDestino(
 								db.getString().replaceFirst("file://", "").replaceAll("\n|\r", ""));
-						libroDestinoÁrbol.setRoot(construyeÁrbolDesdeElementoDOM(
-								traducciónGUI.getTraducciónPO().getLibroDestinoDoc().getRootElement()));
-						libroDestinoÁrbol.getRoot().setExpanded(true);
-						if (traducciónGUI.getTraducciónPO().getLibroOrigenDoc() != null)
-							traducciónGUI.getTraducciónPO().generaPO();
-						áreaTextoPO.setText(traducciónGUI.getTraducciónPO().obténContenidoPO());
+						
+						CargaTraducciónLibrosServicio servicioSegPlano = new CargaTraducciónLibrosServicio();
+						servicioSegPlano.setLibroConstruyéndose(InstanciaLibro.DESTINO);
+
+						servicioSegPlano.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+							@SuppressWarnings("unchecked")
+							@Override
+							public void handle(WorkerStateEvent wse) {
+								libroDestinoÁrbol.setRoot((TreeItem<LocationAwareElement>) wse.getSource().getValue());
+								libroDestinoÁrbol.getRoot().setExpanded(true);
+								
+								if (traducciónGUI.getTraducciónPO().getLibroOrigenDoc() != null) {
+									traducciónGUI.getLienzoRaízControlador().inicializaInfoTraducción();
+									áreaTextoPO.setText(traducciónGUI.getTraducciónPO().obténContenidoPO());
+								}
+								
+								libroDestinoPila.getChildren().remove(cajaIndProgreso);
+								libroDestinoPila.getChildren().remove(1); // Eliminamos el texto de fondo, dejando el árbol
+							}
+						});
+						
+						servicioSegPlano.start();
 						esExitoso = true;
 					} catch (FileNotFoundException | DocumentException e) {
 						BITÁCORA.log(Level.SEVERE, "Imposible cargar el libro destino: ", e);
@@ -238,7 +297,7 @@ public class LienzoGeneralControlador {
 			TableCell<FraseConTraducción, String> celda = new TableCell<>();
 			Text texto = new Text();
 			celda.setGraphic(texto);
-			celda.setPrefHeight(Control.USE_COMPUTED_SIZE);
+			celda.setPrefHeight(Control.USE_COMPUTED_SIZE); // Cálculo de altura según contenido
 			texto.wrappingWidthProperty().bind(celda.widthProperty());
 			texto.textProperty().bind(celda.itemProperty());
 			return celda;
@@ -255,14 +314,21 @@ public class LienzoGeneralControlador {
 		tablaFrases.setLayoutX(5);
 		tablaFrases.setLayoutY(5);
 		tablaFrases.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-		AnchorPane.setTopAnchor(tablaFrases, 0.0);
-		AnchorPane.setBottomAnchor(tablaFrases, 0.0);
-		AnchorPane.setLeftAnchor(tablaFrases, 0.0);
-		AnchorPane.setRightAnchor(tablaFrases, 0.0);
+		AnchorPane.setTopAnchor(tablaFrases, 5.0);
+		AnchorPane.setBottomAnchor(tablaFrases, 5.0);
+		AnchorPane.setLeftAnchor(tablaFrases, 10.0);
+		AnchorPane.setRightAnchor(tablaFrases, 10.0);
 
 		((AnchorPane) escena.getRoot()).getChildren().clear();
 		((AnchorPane) escena.getRoot()).getChildren().addAll(tablaFrases);
 		diálogoFrases.setScene(escena);
+		diálogoFrases.show();
+		/*
+		 * Forzamos un redimensionamiento, para adecuar el recálculo del tamaño de las
+		 * celdas según las frases.
+		 */
+		diálogoFrases.setWidth(diálogoFrases.getWidth());
+		diálogoFrases.setHeight(diálogoFrases.getHeight());
 		diálogoFrases.showAndWait();
 	}
 
@@ -275,7 +341,7 @@ public class LienzoGeneralControlador {
 	 *            de pila.
 	 * @return Subárbol construido a partir de la raíz especificada.
 	 */
-	private TreeItem<NumberedSAXReader.LocationAwareElement> construyeÁrbolDesdeElementoDOM(
+	synchronized private TreeItem<NumberedSAXReader.LocationAwareElement> construyeÁrbolDesdeElementoDOM(
 			Element elementoRaízSubárbol) {
 		TreeItem<NumberedSAXReader.LocationAwareElement> elementoÁrbolVisual = new TreeItem<>(
 				(NumberedSAXReader.LocationAwareElement) elementoRaízSubárbol);
@@ -307,5 +373,58 @@ public class LienzoGeneralControlador {
 	 */
 	public void setTraducciónGUI(TraducciónDocBookGUI traducciónGUI) {
 		this.traducciónGUI = traducciónGUI;
+	}
+
+	/**
+	 * Subclase de Servicio para control de tareas de 2º plano intensivas en cálculo.
+	 */
+	private class CargaTraducciónLibrosServicio extends Service<TreeItem<NumberedSAXReader.LocationAwareElement>> {
+		private InstanciaLibro libroConstruyéndose;
+
+		/**
+		 * @return El libro construyéndose en la tarea de segundo plano.
+		 */
+		public InstanciaLibro getLibroConstruyéndose() {
+			return libroConstruyéndose;
+		}
+
+		/**
+		 * @param libroConstruyéndose
+		 *            El libro construyéndose en la tarea de segundo plano.
+		 */
+		public void setLibroConstruyéndose(InstanciaLibro libroConstruyéndose) {
+			this.libroConstruyéndose = libroConstruyéndose;
+		}
+
+		@Override
+		protected Task<TreeItem<NumberedSAXReader.LocationAwareElement>> createTask() {
+			return new Task<TreeItem<NumberedSAXReader.LocationAwareElement>>() {
+
+				@Override
+				protected TreeItem<NumberedSAXReader.LocationAwareElement> call() throws Exception {
+					TreeItem<NumberedSAXReader.LocationAwareElement> elementoÁrbolVisual = libroConstruyéndose
+							.equals(InstanciaLibro.ORIGEN)
+									? construyeÁrbolDesdeElementoDOM(
+											traducciónGUI.getTraducciónPO().getLibroOrigenDoc().getRootElement())
+									: construyeÁrbolDesdeElementoDOM(
+											traducciónGUI.getTraducciónPO().getLibroDestinoDoc().getRootElement());
+
+					if (traducciónGUI.getTraducciónPO().getLibroOrigenDoc() != null
+							&& traducciónGUI.getTraducciónPO().getLibroDestinoDoc() != null) {
+						traducciónGUI.getTraducciónPO().generaPO();
+					}
+
+					return elementoÁrbolVisual;
+				}
+
+			};
+		}
+	}
+	
+	/**
+	 * Enumerado de instancias posibles de libro.
+	 */
+	private static enum InstanciaLibro {
+		ORIGEN, DESTINO
 	}
 }
