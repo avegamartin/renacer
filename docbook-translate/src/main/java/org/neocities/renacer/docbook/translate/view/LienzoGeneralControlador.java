@@ -25,17 +25,21 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Control;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
@@ -63,6 +67,12 @@ public class LienzoGeneralControlador {
 	private StackPane libroOrigenPila;
 	@FXML
 	private StackPane libroDestinoPila;
+	@FXML
+	private Label libroOrigenNombre;
+	@FXML
+	private Label libroDestinoNombre;
+	@FXML
+	private Tooltip libroDestinoAyudaBurbuja;
 
 	private TableView<FraseConTraducción> tablaFrases = new TableView<FraseConTraducción>();
 	private ObservableList<FraseConTraducción> listaFrases = FXCollections.observableArrayList();
@@ -108,6 +118,7 @@ public class LienzoGeneralControlador {
 
 						traducciónGUI.getTraducciónPO().estableceLibroOrigen(
 								db.getString().replaceFirst("file://", "").replaceAll("\n|\r", ""));
+						libroOrigenNombre.setText(traducciónGUI.getTraducciónPO().getLibroOrigenFichero().getName());
 
 						CargaTraducciónLibrosServicio servicioSegPlano = new CargaTraducciónLibrosServicio();
 						servicioSegPlano.setLibroConstruyéndose(InstanciaLibro.ORIGEN);
@@ -118,17 +129,17 @@ public class LienzoGeneralControlador {
 							public void handle(WorkerStateEvent wse) {
 								libroOrigenÁrbol.setRoot((TreeItem<LocationAwareElement>) wse.getSource().getValue());
 								libroOrigenÁrbol.getRoot().setExpanded(true);
-								
+
 								if (traducciónGUI.getTraducciónPO().getLibroDestinoDoc() != null) {
 									traducciónGUI.getLienzoRaízControlador().inicializaInfoTraducción();
 									áreaTextoPO.setText(traducciónGUI.getTraducciónPO().obténContenidoPO());
 								}
-								
+
 								libroOrigenPila.getChildren().remove(cajaIndProgreso);
-								libroOrigenPila.getChildren().remove(1); // Eliminamos el texto de fondo, dejando el árbol
+								libroOrigenPila.getChildren().remove(1); // Eliminamos el fondo, dejando el árbol
 							}
 						});
-						
+
 						servicioSegPlano.start();
 						esExitoso = true;
 					} catch (FileNotFoundException | DocumentException e) {
@@ -173,12 +184,15 @@ public class LienzoGeneralControlador {
 				if (traducciónGUI.getTraducciónPO().getLibroDestinoDoc() != null && evento.getClickCount() <= 2) {
 					NumberedSAXReader.LocationAwareElement nodo = libroOrigenÁrbol.getSelectionModel().getSelectedItem()
 							.getValue();
+					
 					if (nodo.getRelatedNode() != null) {
 						TreeItem<NumberedSAXReader.LocationAwareElement> nodoVisual = nodo.getRelatedNode()
 								.getVisualNode();
 						libroDestinoÁrbol.getSelectionModel().select(nodoVisual);
 						libroDestinoÁrbol.scrollTo(libroDestinoÁrbol.getSelectionModel().getSelectedIndex());
+					}
 
+					if (nodo.getRelatedNode() != null || nodo.isNodeWithErrors()) {
 						String patrónBúsquedaPO = "#: "
 								+ traducciónGUI.getTraducciónPO().getLibroOrigenFichero().getName() + ":"
 								+ nodo.getLineNumber();
@@ -243,7 +257,8 @@ public class LienzoGeneralControlador {
 
 						traducciónGUI.getTraducciónPO().estableceLibroDestino(
 								db.getString().replaceFirst("file://", "").replaceAll("\n|\r", ""));
-						
+						libroDestinoNombre.setText(traducciónGUI.getTraducciónPO().getLibroDestinoFichero().getName());
+
 						CargaTraducciónLibrosServicio servicioSegPlano = new CargaTraducciónLibrosServicio();
 						servicioSegPlano.setLibroConstruyéndose(InstanciaLibro.DESTINO);
 
@@ -253,17 +268,17 @@ public class LienzoGeneralControlador {
 							public void handle(WorkerStateEvent wse) {
 								libroDestinoÁrbol.setRoot((TreeItem<LocationAwareElement>) wse.getSource().getValue());
 								libroDestinoÁrbol.getRoot().setExpanded(true);
-								
+
 								if (traducciónGUI.getTraducciónPO().getLibroOrigenDoc() != null) {
 									traducciónGUI.getLienzoRaízControlador().inicializaInfoTraducción();
 									áreaTextoPO.setText(traducciónGUI.getTraducciónPO().obténContenidoPO());
 								}
-								
+
 								libroDestinoPila.getChildren().remove(cajaIndProgreso);
-								libroDestinoPila.getChildren().remove(1); // Eliminamos el texto de fondo, dejando el árbol
+								libroDestinoPila.getChildren().remove(1); // Eliminamos el fondo, dejando el árbol
 							}
 						});
-						
+
 						servicioSegPlano.start();
 						esExitoso = true;
 					} catch (FileNotFoundException | DocumentException e) {
@@ -274,6 +289,16 @@ public class LienzoGeneralControlador {
 
 				evento.setDropCompleted(esExitoso);
 				evento.consume();
+			}
+		});
+
+		libroDestinoÁrbol.setOnMouseClicked(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent event) {
+				// Mostrar el número de línea, del fichero de libro, correspondiente al nodo.
+				NumberedSAXReader.LocationAwareElement nodo = libroDestinoÁrbol.getSelectionModel().getSelectedItem()
+						.getValue();
+				libroDestinoAyudaBurbuja.setText("Línea " + nodo.getLineNumber());
 			}
 		});
 	}
@@ -290,6 +315,13 @@ public class LienzoGeneralControlador {
 		diálogoFrases.setTitle("Frases del nodo");
 		diálogoFrases.initModality(Modality.WINDOW_MODAL);
 		diálogoFrases.initOwner(traducciónGUI.getEscenarioPrimario());
+		
+		// Posibilitamos el cierre del diálogo mediante la tecla Escape
+		diálogoFrases.addEventHandler(KeyEvent.KEY_RELEASED, (KeyEvent evento) -> {
+			if (evento.getCode() == KeyCode.ESCAPE) {
+				diálogoFrases.close();
+			}
+		});
 
 		TableColumn<FraseConTraducción, String> fraseOrigenCol = new TableColumn<>("Idioma Origen");
 		fraseOrigenCol.setCellValueFactory(new PropertyValueFactory<>("fraseOrigen"));
@@ -376,7 +408,8 @@ public class LienzoGeneralControlador {
 	}
 
 	/**
-	 * Subclase de Servicio para control de tareas de 2º plano intensivas en cálculo.
+	 * Subclase de Servicio para control de tareas de 2º plano intensivas en
+	 * cálculo.
 	 */
 	private class CargaTraducciónLibrosServicio extends Service<TreeItem<NumberedSAXReader.LocationAwareElement>> {
 		private InstanciaLibro libroConstruyéndose;
@@ -420,7 +453,7 @@ public class LienzoGeneralControlador {
 			};
 		}
 	}
-	
+
 	/**
 	 * Enumerado de instancias posibles de libro.
 	 */

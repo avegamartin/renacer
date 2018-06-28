@@ -158,6 +158,13 @@ public class TraducciónDocBook {
 	}
 
 	/**
+	 * @return the libroDestinoFichero
+	 */
+	public File getLibroDestinoFichero() {
+		return libroDestinoFichero;
+	}
+
+	/**
 	 * Análisis de ficheros XML contenedores de libros esquematizados según el
 	 * estándar DocBook, y conversión de los mismos a un árbol de objetos Java
 	 * apropiado.
